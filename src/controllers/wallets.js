@@ -51,13 +51,15 @@ class WalletController {
     try {
       const { credit, service } = req.body
       const wallet = await Wallet.findOne( { createdBy: req.user.userId } )
+      console.log(wallet)
       if( wallet.credit < Number(credit)) {
         throw new ApiError(null,'Insufficient credit', 402)
       }
-      const updateCredit = wallet.credit - credit
-      const item = await Wallet.updateOne({ userId: req.user.userId}, { credit, service, updateCredit })
-      //add transcations
-      res.sendSuccessResponse( item )
+      console.log(wallet.credit, credit)
+      const updateCredit = Number(wallet.credit) - Number(credit)
+      console.log(updateCredit)
+      const item = await Wallet.updateOne({ createdBy: req.user.userId}, { credit: updateCredit })
+      res.sendSuccessResponse( null, { updated: true } )
       } catch (e) {
       next(e)
     }
