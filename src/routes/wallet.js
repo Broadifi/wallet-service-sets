@@ -12,7 +12,7 @@ class WalletRoutes {
     this.router.post('/', checkLogin, WalletController.createCheckout)
     this.router.post('/use-credit', checkLogin, WalletController.useCredit)
     this.router.post('/webhook', WalletController.webohook)
-    this.router.get('/:id', checkLogin, WalletController.getWallet)
+    this.router.get('/', checkLogin, WalletController.getWallet)
 
     
   }
