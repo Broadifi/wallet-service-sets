@@ -5,41 +5,7 @@ const { Wallet } = require("../models/wallet");
 const mongoose = require('mongoose')
 class WalletController {
 
-  constructor() {
-    this.paymentHistory =  PaymentHistory
-    this.wallet = Wallet
-    this.paymentHistory.watch().on('change', async change => {
-      console.log('Transactions:', change);
-      try {
-          let status = '';
-          console.log(change)
-          if (change.operationType === 'create') {
-            if( status ) {
-              const isWalletExist  = await this.wallet.findOne({createdBy: user.createdBy})
-              if( isWalletExist ) {
-                const credit = isWalletExist.credit + price
-                await this.wallet.updateOne({createdBy: user.createdBy}, { credit })
-                //add transcations
-              }
-              else {
-                const wallet =  await this.wallet.create({
-                  paymentId: change.documentKey._id,
-                  status: status,
-                  credit: price,
-                  createdBy: user.createdBy
-                });
-                //add transcations
-              }
-             
-              console.log('credit added')
-            }
-          }
 
-        } catch (error) {
-          console.error('Error saving wallet:', error);
-        }
-    })  
-  }
 
   async createCheckout( req, res, next ) {
     try {
@@ -68,7 +34,7 @@ class WalletController {
       const { type , data: { object: eventObj }} = event
 
       if(type === 'checkout.session.completed' && eventObj.payment_status === 'paid' && eventObj.status === 'complete'){
-        const r = await this.wallet.create({paymentId: eventObj.payment_intent, status: eventObj.payment_status, credit: eventObj.amount_total, createdBy:eventObj.client_reference_id})
+        const r = await wallet.create({paymentId: eventObj.payment_intent, status: eventObj.payment_status, credit: eventObj.amount_total, createdBy:eventObj.client_reference_id})
         return res.send({ data: r });
       }
     } catch (e) {
@@ -79,12 +45,12 @@ class WalletController {
   async useCredit(req, res, next ) {
     try {
       const { credit, service } = req.body
-      const wallet = await this.findOne( { createdBy: req.user.userId } )
+      const wallet = await Wallet.findOne( { createdBy: req.user.userId } )
       if( wallet.credit < Number(credit)) {
         throw new ApiError(null,'Insufficient credit', 402)
       }
       const updateCredit = wallet.credit - credit
-      const item = await this.wallet.updateOne({ userId: req.user.userId}, { credit, service, updateCredit })
+      const item = await Wallet.updateOne({ userId: req.user.userId}, { credit, service, updateCredit })
       //add transcations
       res.sendSuccessResponse( item )
       } catch (e) {
@@ -94,7 +60,7 @@ class WalletController {
 
   async getWallet(req, res, next ) {
     try {
-      const item = await this.wallet.findOne({createdBy: req.user.userId})
+      const item = await Wallet.findOne({createdBy: req.user.userId})
       res.sendSuccessResponse(item)
     } catch (e) {
       next(e)
