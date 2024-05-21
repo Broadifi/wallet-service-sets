@@ -1,0 +1,110 @@
+const stripe = require('stripe')(process.env.STRIPE_SECRET);
+// const { paymentRedirectUri } = require('./../config');
+require('dotenv').config()
+
+
+const createCheckoutSessions = async ( price, userId, email) => {
+  try {
+    const session = await stripe.checkout.sessions.create(
+      {
+        payment_method_types: ['card'],
+        mode: 'payment',
+        success_url: process.env.STRIPE_SUCESS,
+        cancel_url: process.env.STRIPE_FAILED,
+        customer_email: email,
+        client_reference_id: userId,
+        line_items: [{
+          price_data: {
+            currency: 'USD',
+            unit_amount: price * 100,
+            product_data: {
+              name: 'custom'
+            }       
+          },
+          quantity: 1
+        }]
+      }
+    );
+
+    return { data: {
+      stripeCheckoutId: session.id,
+      redirectUrl: session.url 
+    }}
+
+  } catch (e) {
+    throw e  
+  }
+}
+
+
+
+async function createStripeCustomer( name, email ) {
+    try {
+        const customer = await stripe.customers.create({
+            name: name,
+            email: email
+            });
+        return customer
+    } catch (e) {
+        throw e
+    }
+}
+
+
+
+
+
+// async function addCardDetails(userId, data) {
+//     try {
+
+//         // create token is giving error 402
+//         // const user = await User.findOne( {
+//         //     where: { 'id': userId }
+//         // })
+
+//         const customerSource = await stripe.customers.createSource(user.stripe_cust_id, {
+//             source: 'tok_visa',
+//         });
+
+//         console.log(customerSource);
+
+//         const card = {
+//             token: customerSource.id,
+//             // user_id: userId, // Assuming userId is already a number
+//             last4: customerSource.last4,
+//             brand: customerSource.brand,
+//             exp_month: customerSource.exp_month,
+//             exp_year: customerSource.exp_year,
+//             name: customerSource.name,
+//             custId: customerSource.id,
+//         };
+
+//         const item = await Cards.create(card);
+//         return item;
+//     } catch (e) {
+//         throw e;
+//     }
+// }
+// switch (event.type) {
+//   case 'checkout.session.async_payment_failed':
+//     const checkoutSessionAsyncPaymentFailed = event.data.object;
+//     // Then define and call a function to handle the event checkout.session.async_payment_failed
+//     break;
+//   case 'checkout.session.async_payment_succeeded':
+//     const checkoutSessionAsyncPaymentSucceeded = event.data.object;
+//     // Then define and call a function to handle the event checkout.session.async_payment_succeeded
+//     break;
+//   case 'checkout.session.completed':
+//     const checkoutSessionCompleted = event.data.object;
+//     // Then define and call a function to handle the event checkout.session.completed
+//     break;
+//   case 'checkout.session.expired':
+//     const checkoutSessionExpired = event.data.object;
+//     // Then define and call a function to handle the event checkout.session.expired
+//     break;
+//   // ... handle other event types
+//   default:
+//     console.log(`Unhandled event type ${event.type}`);
+// }
+
+module.exports = { createCheckoutSessions, createStripeCustomer }
