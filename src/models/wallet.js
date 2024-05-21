@@ -8,7 +8,7 @@ class Wallet {
     status: {
       type: String,
     },
-    price: {
+    credit: {
       type: String
     },
     createdBy: {

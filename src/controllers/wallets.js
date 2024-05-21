@@ -64,32 +64,11 @@ class WalletController {
       const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET
       const sig = req.headers['stripe-signature'];
       let event = req.body
-      
-      // try {
-      //   event = await construct(req.body, sig, endpointSecret);
-      // } catch (err) {
-      //   throw new Error(err)
-      // }
       console.log(event)
       const { type , data: { object: eventObj }} = event
-      console.log('-----webhooks----')
-      console.log(event)
+
       if(type === 'checkout.session.completed' && eventObj.payment_status === 'paid' && eventObj.status === 'complete'){
-        const r = await user_instances.findOneAndUpdate(
-          {
-            _id: eventObj.client_reference_id
-          }, 
-          {
-            paymentIntentId: eventObj.payment_intent,
-            isActive: true,
-            expiresAt: new Date().setDate(new Date().getDate() + 30)
-          },
-          {
-            new: true
-          }
-        )
-  
-        userInstanceEvents.emit('payment', eventObj.client_reference_id)
+        const r = await this.wallet.create({paymentId: eventObj.payment_intent, status: eventObj.payment_status, credit: eventObj.amount_total, createdBy:eventObj.client_reference_id})
         return res.send({ data: r });
       }
     } catch (e) {
@@ -101,10 +80,10 @@ class WalletController {
     try {
       const { credit, service } = req.body
       const wallet = await this.findOne( { createdBy: req.user.userId } )
-      if( wallet.price < Number(credit)) {
+      if( wallet.credit < Number(credit)) {
         throw new ApiError(null,'Insufficient credit', 402)
       }
-      const updateCredit = price - credit
+      const updateCredit = wallet.credit - credit
       const item = await this.wallet.updateOne({ userId: req.user.userId}, { credit, service, updateCredit })
       //add transcations
       res.sendSuccessResponse( item )
