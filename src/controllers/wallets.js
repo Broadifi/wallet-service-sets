@@ -69,6 +69,8 @@ class WalletController {
       } catch (err) {
         throw new Error(err)
       }
+      console.log(event)
+
       const { type , data: { object: eventObj }} = event
       console.log('-----webhooks----')
       console.log(event)
