@@ -34,7 +34,7 @@ class WalletController {
       const { type , data: { object: eventObj }} = event
 
       if(type === 'checkout.session.completed' && eventObj.payment_status === 'paid' && eventObj.status === 'complete'){
-        const r = await wallet.create({paymentId: eventObj.payment_intent, status: eventObj.payment_status, credit: eventObj.amount_total, createdBy:eventObj.client_reference_id})
+        const r = await Wallet.create({paymentId: eventObj.payment_intent, status: eventObj.payment_status, credit: eventObj.amount_total, createdBy:eventObj.client_reference_id})
         return res.send({ data: r });
       }
     } catch (e) {
