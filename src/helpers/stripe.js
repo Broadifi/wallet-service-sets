@@ -51,6 +51,15 @@ async function createStripeCustomer( name, email ) {
 }
 
 
+async function construct(body, sig, endpointSecret){
+    try {
+        const event = stripe.webhooks.constructEvent(body, sig, endpointSecret);
+        return event
+    } catch (error) {
+        
+    }
+}
+
 
 
 
@@ -107,4 +116,4 @@ async function createStripeCustomer( name, email ) {
 //     console.log(`Unhandled event type ${event.type}`);
 // }
 
-module.exports = { createCheckoutSessions, createStripeCustomer }
+module.exports = { createCheckoutSessions, createStripeCustomer, construct}

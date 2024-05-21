@@ -1,5 +1,5 @@
 const { ApiError } = require("../helpers");
-const { createCheckoutSessions } = require("../helpers/stripe");
+const { createCheckoutSessions, construct } = require("../helpers/stripe");
 const { PaymentHistory } = require("../models/paymentHistory");
 const { Wallet } = require("../models/wallet");
 const mongoose = require('mongoose')
@@ -65,7 +65,7 @@ class WalletController {
       const sig = req.headers['stripe-signature'];
       let event;
       try {
-        event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+        event = await construct(req.body, sig, endpointSecret);
       } catch (err) {
         throw new Error(err)
       }
