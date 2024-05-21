@@ -63,14 +63,14 @@ class WalletController {
     try {
       const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET
       const sig = req.headers['stripe-signature'];
-      let event;
-      try {
-        event = await construct(req.body, sig, endpointSecret);
-      } catch (err) {
-        throw new Error(err)
-      }
+      let event = req.body
+      
+      // try {
+      //   event = await construct(req.body, sig, endpointSecret);
+      // } catch (err) {
+      //   throw new Error(err)
+      // }
       console.log(event)
-
       const { type , data: { object: eventObj }} = event
       console.log('-----webhooks----')
       console.log(event)
