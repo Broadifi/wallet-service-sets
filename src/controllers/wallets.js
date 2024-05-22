@@ -36,6 +36,7 @@ class WalletController {
         const isWalletExist = await Wallet.findOne( { createdBy: eventObj.client_reference_id  } )
         if( isWalletExist ) {
           const credit = Number(isWalletExist.credit) + Number(eventObj.amount_total)
+          console.log(credit)
           const r = await Wallet.updateOne({createdBy: eventObj.client_reference_id}, {credit})
           return res.send({ data: r });
         }
