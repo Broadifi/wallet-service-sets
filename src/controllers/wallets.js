@@ -13,7 +13,6 @@ class WalletController {
       console.log(req.user)
       const userCollection = mongoose.connection.db.collection('users');
       const user = await userCollection.findOne({_id: new mongoose.mongo.ObjectId(req.user.userId) })
-      console.log(user)
       if( !user ) {
         throw new ApiError('NOT_FOUND_ERROR', 'User not found')
       }
@@ -36,7 +35,8 @@ class WalletController {
       if(type === 'checkout.session.completed' && eventObj.payment_status === 'paid' && eventObj.status === 'complete'){
         const isWalletExist = await Wallet.findOne( { createdBy: eventObj.client_reference_id  } )
         if( isWalletExist ) {
-          const r = await Wallet.updateOne({createdBy: eventObj.client_reference_id}, {credit: eventObj.amount_total})
+          const credit = Number(isWalletExist.credit) - Number(eventObj.amount_total)
+          const r = await Wallet.updateOne({createdBy: eventObj.client_reference_id}, {credit})
           return res.send({ data: r });
         }
         const r = await Wallet.create({paymentId: eventObj.payment_intent, status: eventObj.payment_status, credit: eventObj.amount_total, createdBy:eventObj.client_reference_id})

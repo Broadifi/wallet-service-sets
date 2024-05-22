@@ -3,7 +3,7 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET);
 require('dotenv').config()
 
 
-const createCheckoutSessions = async ( price, userId, email) => {
+const createCheckoutSessions = async ( price, userId, email ) => {
   try {
     const session = await stripe.checkout.sessions.create(
       {
@@ -18,7 +18,7 @@ const createCheckoutSessions = async ( price, userId, email) => {
             currency: 'USD',
             unit_amount: price * 100,
             product_data: {
-              name: 'custom'
+              name: 'Credit'
             }       
           },
           quantity: 1
