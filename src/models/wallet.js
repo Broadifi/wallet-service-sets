@@ -9,7 +9,7 @@ class Wallet {
       type: String,
     },
     credit: {
-      type: String
+      type: String,
     },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId, // Assuming users are stored as ObjectIds in MongoDB

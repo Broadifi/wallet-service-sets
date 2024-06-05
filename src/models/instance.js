@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { instanceType } = require('../../config');
 class InstanceConfig {
     schema = new mongoose.Schema({
         name: {
@@ -7,19 +8,19 @@ class InstanceConfig {
             unique: true
         },
         hourlyRate: {
-            type: Number,
+            type: String,
             required: true,
             min: 0
         },
         availableFor: {
             type: String,
-            enum: ['static', 'backend', 'instance']
+            enum: instanceType
         },
         currency: {
             type: String,
             default: 'USD'
         },
-        vCPU: Number,
+        vCPU: String,
         RAM: Number, // in MB
         description: String,
         images: [String],

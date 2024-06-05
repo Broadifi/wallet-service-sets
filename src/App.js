@@ -2,6 +2,8 @@ const bodyParser = require('body-parser');
 const { SendSuccessResponse, ApiError } = require('./helpers');
 const { formatMongooseError } = require('./helpers');
 const { WalletRoutes } = require('./routes/wallet');
+const { InstacesRoute } = require('./routes/instances');
+const { BillingRoutes } = require('./routes/billing');
 /**
  * Node.js App Class
  */
@@ -38,6 +40,8 @@ class App {
     });
 
     app.use('/api/wallets', WalletRoutes)
+    app.use('/api/instances', InstacesRoute)
+    app.use('/api/billings', BillingRoutes)
 
     app.use('/*', (req, res, next) => {
       const error = new ApiError('NOT_FOUND_ERROR');

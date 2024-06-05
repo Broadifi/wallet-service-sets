@@ -2,17 +2,19 @@ const mongoose = require('mongoose');
 class Billing {
   schema = new mongoose.Schema({
     userId: {
-      type: mongoose.Schema.Types.ObjectId, // Assuming users are stored as ObjectIds in MongoDB
-      ref: 'User',
+      type: mongoose.Schema.Types.ObjectId, 
+      ref: 'users',
       required: true,
     },
-    serviceDetails: {
-      type: Object,
+    instanceType: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'instance-config',
       required: true,
     },
     hourlyRate: {
-      type: Number,
+      type: String,
       required: true,
+      default: 0
     },
     startTime: {
       type: Date,
@@ -24,7 +26,7 @@ class Billing {
       type: Number,
     },
     totalCost: {
-      type: Number,
+      type: String,
       default: 0,
     },
     lastBilled: {

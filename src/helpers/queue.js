@@ -1,39 +1,46 @@
 const { Worker } = require("bullmq");
 const { Billing } = require("../models/billing");
-const { UsageLog } = require("../models/usageLog");
 const agenda = require("./agenda");
 const { redisClient } = require("./redis");
 const { Wallet } = require("../models/wallet");
+const { instanceConfig } = require("../models/instance");
+const { default: mongoose } = require("mongoose");
 
 const processJob = async (job) => {
     if (job.name === 'startBilling') {
-        const { userId, hourlyRate, serviceName } = job.data;
+        const { type } = job.data;
+        const { id } = job
         try {
-            const wallet = await Wallet.findOne({ createdBy: userId });
+            
+            const document = await mongoose.connection.db.collection(type).findOne({_id: id }).toArray()
+            const instanceDetails = await instanceConfig.findOne({ _id: document.instanceType })
 
-            if (!wallet || Number(wallet.credit) < Number(hourlyRate)) {
+            if( !document ) {
+                return false
+            }
+            const wallet = await Wallet.findOne({ createdBy: document.createdBy });
+
+            if (!wallet || parseFloat(wallet.credit) < parseFloat(instanceDetails.hourlyRate)) {
                 throw new Error('Payment required');
             }
 
-            let billing = await Billing.findOne({ userId, serviceName });
-
+            let billing = await Billing.findOne({ userId: document.createdBy, instanceDetails: deployments.instanceType } );
+      
             if (!billing) {
-                billing = new Billing({ userId, serviceName, hourlyRate });
+                billing = new Billing({ 
+                    userId, 
+                    instanceType: document.instanceType,
+                    hourlyRate: instanceDetails.hourlyRate, 
+                    startTime: document.createdAt
+                });
                 await billing.save();
+                console.log(billing)
             }
 
-            const usageLog = new UsageLog({
-                service: serviceName,
-                startTime: new Date(),
-                userId
-            });
-            await usageLog.save();
-
-            billing.usageLogs = usageLog._id;
-            await billing.save();
-
-            await agenda.every('10 minute', 'update billing hourly', { billingId: billing._id.toString() });
-
+            const jobDetails = await agenda.every('2 minute', 'update billing hourly', { billingId: billing._id.toString() });
+            console.log('job details -------')
+            console.log( jobDetails)
+            return jobDetails
         } catch (error) {
             console.error(`Error processing 'add' job: ${error.message}`);
             throw error;
