@@ -6,17 +6,22 @@ class Billing {
       ref: 'User',
       required: true,
     },
-    serviceName: {
-      type: String,
+    serviceDetails: {
+      type: Object,
       required: true,
     },
     hourlyRate: {
       type: Number,
       required: true,
     },
-    usageLogs: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'usageLogs',
+    startTime: {
+      type: Date,
+    },
+    endTime: {
+      type: Date,
+    },
+    durationHours: {
+      type: Number,
     },
     totalCost: {
       type: Number,

@@ -1,4 +1,4 @@
-const { Worker, tryCatch } = require("bullmq");
+const { Worker } = require("bullmq");
 const { Billing } = require("../models/billing");
 const { UsageLog } = require("../models/usageLog");
 const agenda = require("./agenda");
@@ -6,7 +6,7 @@ const { redisClient } = require("./redis");
 const { Wallet } = require("../models/wallet");
 
 const processJob = async (job) => {
-    if (job.name === 'add') {
+    if (job.name === 'startBilling') {
         const { userId, hourlyRate, serviceName } = job.data;
         try {
             const wallet = await Wallet.findOne({ createdBy: userId });
@@ -39,7 +39,7 @@ const processJob = async (job) => {
             throw error;
         }
 
-    } else if (job.name === 'remove') {
+    } else if (job.name === 'stopBilling') {
         try {
             const { jobId } = job.data;
 
