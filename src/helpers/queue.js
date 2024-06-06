@@ -6,13 +6,19 @@ const { Wallet } = require("../models/wallet");
 const { instanceConfig } = require("../models/instance");
 const { default: mongoose } = require("mongoose");
 
+(async  () => {
+    await agenda.start();
+  })();
+
 const processJob = async (job) => {
     if (job.name === 'startBilling') {
         const { type } = job.data;
         const { id } = job
         try {
-            
-            const document = await mongoose.connection.db.collection(type).findOne({_id: id }).toArray()
+            console.log( type, id )
+            const collection = mongoose.connection.db.collection(type)
+            const document = await collection.findOne({_id: new mongoose.mongo.ObjectId(id) })
+            console.log(document)
             const instanceDetails = await instanceConfig.findOne({ _id: document.instanceType })
 
             if( !document ) {
@@ -24,11 +30,11 @@ const processJob = async (job) => {
                 throw new Error('Payment required');
             }
 
-            let billing = await Billing.findOne({ userId: document.createdBy, instanceDetails: deployments.instanceType } );
+            let billing = await Billing.findOne({ userId: document.createdBy, instanceDetails: instanceDetails.instanceType } );
       
             if (!billing) {
                 billing = new Billing({ 
-                    userId, 
+                    userId: document.createdBy, 
                     instanceType: document.instanceType,
                     hourlyRate: instanceDetails.hourlyRate, 
                     startTime: document.createdAt
@@ -39,7 +45,6 @@ const processJob = async (job) => {
 
             const jobDetails = await agenda.every('2 minute', 'update billing hourly', { billingId: billing._id.toString() });
             console.log('job details -------')
-            console.log( jobDetails)
             return jobDetails
         } catch (error) {
             console.error(`Error processing 'add' job: ${error.message}`);
@@ -48,9 +53,11 @@ const processJob = async (job) => {
 
     } else if (job.name === 'stopBilling') {
         try {
-            const { jobId } = job.data;
 
-            const jobs = await agenda.jobs({ "data.billingId": jobId });
+            const { id } = job
+            console.log(id, job.data)
+            const jobs = await agenda.jobs({ "data.billingId": id });
+            console.log(jobs)
             if (jobs.length === 0) {
                 return { message: 'Job not found' };
             }
@@ -77,7 +84,7 @@ billingTrackerQueue.on('active', (job) => {
   
 billingTrackerQueue.on('completed', async (job) => {
     await job.remove();
-    console.assert(` [Id: ${job.id}] | billing-tracker Completed & Removed from Queue`);
+    console.log(` [Id: ${job.id}] | billing-tracker Completed & Removed from Queue`);
 });
     
 billingTrackerQueue.on('failed',async (job, err) => {

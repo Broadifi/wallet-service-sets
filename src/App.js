@@ -4,6 +4,8 @@ const { formatMongooseError } = require('./helpers');
 const { WalletRoutes } = require('./routes/wallet');
 const { InstacesRoute } = require('./routes/instances');
 const { BillingRoutes } = require('./routes/billing');
+const { billingTrackerQueue } = require('./helpers/queue');
+
 /**
  * Node.js App Class
  */
@@ -29,7 +31,7 @@ class App {
     const app = this.express();
 
     app.use(bodyParser.json());
-
+    
     app.use((req, res, next) => {
       res.sendSuccessResponse = SendSuccessResponse;
       next();

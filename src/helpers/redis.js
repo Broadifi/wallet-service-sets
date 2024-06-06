@@ -1,10 +1,10 @@
 const { Redis } = require('ioredis');
 
 const redisClient = new Redis({
-    port: 26619,
-    host: "caching-3fc281a4-animeshd838-2888.f.aivencloud.com",
+    port: 19616,
+    host: "redis-294cb0c-anirbandas165-d58f.f.aivencloud.com",
     username: "default",
-    password: process.env.REDIS_PASSWORD,
+    password: "AVNS_lUCKicURFU9Zz9y1Mg3",
     tls: {},
     retryStrategy: (times) => {
         const delay = Math.min(times * 50, 2000);

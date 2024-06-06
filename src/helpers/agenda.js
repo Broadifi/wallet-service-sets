@@ -29,9 +29,12 @@ agenda.define('update billing hourly', async (job) => {
      * add nessecary logic to handle the deployment and billing
      */
 
-    if (wallet.credit >= cost) {
-      billing.totalCost = parseFloat((billing.totalCost + billing.hourlyRate));
-      wallet.credit = parseFloat((wallet.credit - billing.hourlyRate ));
+    if ( parseFloat(wallet.credit) >= parseFloat( billing.hourlyRate) ) {
+      // console.log( wallet.credit, billing.hourlyRate)
+      billing.totalCost = parseFloat(billing.totalCost) + parseFloat(billing.hourlyRate);
+      // console.log(parseFloat(billing.totalCost) + parseFloat(billing.hourlyRate))
+      wallet.credit = parseFloat(wallet.credit) - parseFloat(billing.hourlyRate );
+      // console.log(parseFloat(wallet.credit) - parseFloat(billing.hourlyRate ))
       billing.durationHours = durationHours;
       billing.endTime = billing.endTime 
         ? new Date(billing.endTime.getTime() + 36e5) 
@@ -51,6 +54,8 @@ agenda.define('update billing hourly', async (job) => {
     console.error('Error updating billing hourly:', error);
   }
 });
+
+
 
 
 module.exports = agenda;
