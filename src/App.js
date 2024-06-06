@@ -39,9 +39,9 @@ class App {
       res.sendSuccessResponse('Hello World');
     });
 
-    app.use('/api/wallets', WalletRoutes)
-    app.use('/api/instances', InstacesRoute)
-    app.use('/api/billings', BillingRoutes)
+    app.use('/api/v1/wallets', WalletRoutes)
+    app.use('/api/v1/instances', InstacesRoute)
+    app.use('/api/v1/billings', BillingRoutes)
 
     app.use('/*', (req, res, next) => {
       const error = new ApiError('NOT_FOUND_ERROR');
