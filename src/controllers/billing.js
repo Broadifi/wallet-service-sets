@@ -15,7 +15,7 @@ class billingController {
             const totalPages = Math.ceil(totalCount / limit);
             const hasNext = page < totalPages;
 
-            const res = items.map( item => {
+            const result = items.map( item => {
                 return {
                     _id: item._id,
                     type: item.instanceType.availableFor,
@@ -27,7 +27,7 @@ class billingController {
                     currency: item.instanceType.currency
                 }
             })
-            res.sendSuccessResponse( res, { totalCount, hasNext, page } )
+            res.sendSuccessResponse( result, { totalCount, hasNext, page } )
         } catch (e) {
             next(e)
         }
