@@ -8,14 +8,14 @@ class WalletController {
 
   async createCheckout( req, res, next ) {
     try {
-      const { price } = req.body
+      const { amount } = req.body
       console.log(req.user)
       const userCollection = mongoose.connection.db.collection('users');
       const user = await userCollection.findOne({_id: new mongoose.mongo.ObjectId(req.user.userId) })
       if( !user ) {
         throw new ApiError('NOT_FOUND_ERROR', 'User not found')
       }
-      const checkout = await createCheckoutSessions(price, req.user.userId, user.email)
+      const checkout = await createCheckoutSessions(amount, req.user.userId, user.email )
       res.sendSuccessResponse(checkout)
     } catch (e) {
       console.log(e)
