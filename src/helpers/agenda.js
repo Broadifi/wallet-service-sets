@@ -31,7 +31,8 @@ agenda.define('update billing hourly', async (job) => {
 
     if ( parseFloat(wallet.credit) >= parseFloat( billing.hourlyRate) ) {
       // console.log( wallet.credit, billing.hourlyRate)
-      billing.totalCost = parseFloat(billing.totalCost) + parseFloat(billing.hourlyRate);
+      const cost = parseFloat(billing.totalCost) + parseFloat(billing.hourlyRate)
+      billing.totalCost = cost.toFixed(2);
       // console.log(parseFloat(billing.totalCost) + parseFloat(billing.hourlyRate))
       wallet.credit = parseFloat(wallet.credit) - parseFloat(billing.hourlyRate );
       // console.log(parseFloat(wallet.credit) - parseFloat(billing.hourlyRate ))
@@ -46,6 +47,7 @@ agenda.define('update billing hourly', async (job) => {
       console.log(bill)
     } else {
       billing.endTime = now;
+      billing.isActive = false;
       await billing.save();
       // Handle insufficient credit (e.g., stop service, notify user)
       console.log('Insufficient credit. Service will be stopped for user:', billing.userId);

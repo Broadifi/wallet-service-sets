@@ -11,6 +11,10 @@ class Billing {
       ref: 'instance-config',
       required: true,
     },
+    isActive: {
+      type: Boolean,
+      default: true
+    },
     hourlyRate: {
       type: String,
       required: true,

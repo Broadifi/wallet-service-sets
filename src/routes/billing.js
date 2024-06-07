@@ -10,6 +10,7 @@ class BillingRoutes {
 
   initializeRoutes() {
     this.router.get('/', checkLogin, billingController.getAll)
+    this.router.get('/info', checkLogin, billingController.currentBillingInfo)
     this.router.get('/:id', checkLogin, billingController.get)
   }
 

@@ -2,9 +2,6 @@ const mongoose = require('mongoose');
 
 class Wallet {
   schema = new mongoose.Schema({
-    paymentId: {
-      type: String,
-    },
     status: {
       type: String,
     },

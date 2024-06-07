@@ -35,12 +35,12 @@ class WalletController {
       if(type === 'checkout.session.completed' && eventObj.payment_status === 'paid' && eventObj.status === 'complete'){
         const isWalletExist = await Wallet.findOne( { createdBy: eventObj.client_reference_id  } )
         if( isWalletExist ) {
-          const credit = Number(isWalletExist.credit) + eventObj.amount_total
+          const credit = Number(isWalletExist.credit) + ( eventObj.amount_total / 100 )
           console.log(credit)
           const r = await Wallet.updateOne({createdBy: eventObj.client_reference_id}, {credit})
           return res.send({ data: r });
         }
-        const r = await Wallet.create({paymentId: eventObj.payment_intent, status: eventObj.payment_status, credit: eventObj.amount_total, createdBy:eventObj.client_reference_id})
+        const r = await Wallet.create({ status: eventObj.payment_status, credit: eventObj.amount_total / 100, createdBy:eventObj.client_reference_id})
         return res.send({ data: r });
       }
     } catch (e) {
@@ -69,8 +69,8 @@ class WalletController {
   async getWallet(req, res, next ) {
     try {
       const item = await Wallet.findOne({createdBy: req.user.userId}, { paymentId: 0 }).lean()
-      item.credit = item.credit  / 100
-      item.credit = item.credit.toFixed(2)
+      item.credit = item.credit 
+      item.credit = item.credit
       res.sendSuccessResponse(item)
     } catch (e) {
       next(e)
