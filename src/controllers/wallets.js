@@ -28,7 +28,7 @@ class WalletController {
     try {
       const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET
       const sig = req.headers['stripe-signature'];
-      let event = req.body
+      let event = construct(req.body, sig, endpointSecret)
       console.log(event)
       const { type , data: { object: eventObj }} = event
 
@@ -40,7 +40,7 @@ class WalletController {
           const r = await Wallet.updateOne({createdBy: eventObj.client_reference_id}, {credit})
           return res.send({ data: r });
         }
-        const r = await Wallet.create({ status: eventObj.payment_status, credit: eventObj.amount_total / 100, createdBy:eventObj.client_reference_id})
+        const r = await Wallet.create({ credit: eventObj.amount_total / 100, createdBy:eventObj.client_reference_id})
         return res.send({ data: r });
       }
     } catch (e) {
@@ -48,29 +48,28 @@ class WalletController {
     }
   }
 
-  async useCredit(req, res, next ) {
-    try {
-      const { credit, service } = req.body
-      const wallet = await Wallet.findOne( { createdBy: req.user.userId } )
-      console.log(wallet)
-      if( wallet.credit < Number(credit)) {
-        throw new ApiError(null,'Insufficient credit', 402)
-      }
-      console.log(wallet.credit, credit)
-      const updateCredit = Number(wallet.credit) - Number(credit)
-      console.log(updateCredit)
-      const item = await Wallet.updateOne({ createdBy: req.user.userId}, { credit: updateCredit })
-      res.sendSuccessResponse( null, { updated: true } )
-      } catch (e) {
-      next(e)
-    }
-  }
+  // async useCredit(req, res, next ) {
+  //   try {
+  //     const { credit, service } = req.body
+  //     const wallet = await Wallet.findOne( { createdBy: req.user.userId } )
+  //     console.log(wallet)
+  //     if( wallet.credit < Number(credit)) {
+  //       throw new ApiError(null,'Insufficient credit', 402)
+  //     }
+  //     console.log(wallet.credit, credit)
+  //     const updateCredit = Number(wallet.credit) - Number(credit)
+  //     console.log(updateCredit)
+  //     const item = await Wallet.updateOne({ createdBy: req.user.userId}, { credit: updateCredit })
+  //     res.sendSuccessResponse( null, { updated: true } )
+  //     } catch (e) {
+  //     next(e)
+  //   }
+  // }
 
   async getWallet(req, res, next ) {
     try {
-      const item = await Wallet.findOne({createdBy: req.user.userId}, { paymentId: 0 }).lean()
-      item.credit = item.credit 
-      item.credit = item.credit
+      const item = await Wallet.findOne({createdBy: req.user.userId}, { status: 1 , credit: 1}).lean()
+      item.credit = parseFloat(item.credit.toFixed(2))
       res.sendSuccessResponse(item)
     } catch (e) {
       next(e)

@@ -1,6 +1,6 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET);
 // const { paymentRedirectUri } = require('./../config');
-require('dotenv').config()
+// require('dotenv').config()
 
 
 const createCheckoutSessions = async ( price, userId, email ) => {
@@ -38,17 +38,17 @@ const createCheckoutSessions = async ( price, userId, email ) => {
 
 
 
-async function createStripeCustomer( name, email ) {
-    try {
-        const customer = await stripe.customers.create({
-            name: name,
-            email: email
-            });
-        return customer
-    } catch (e) {
-        throw e
-    }
-}
+// async function createStripeCustomer( name, email ) {
+//     try {
+//         const customer = await stripe.customers.create({
+//             name: name,
+//             email: email
+//             });
+//         return customer
+//     } catch (e) {
+//         throw e
+//     }
+// }
 
 
 async function construct(body, sig, endpointSecret){
@@ -56,7 +56,7 @@ async function construct(body, sig, endpointSecret){
         const event = stripe.webhooks.constructEvent(body, sig, endpointSecret);
         return event
     } catch (error) {
-        
+        throw error
     }
 }
 

@@ -4,6 +4,8 @@ class Wallet {
   schema = new mongoose.Schema({
     status: {
       type: String,
+      enum: ['active', 'inactive'],
+      default: 'active'
     },
     credit: {
       type: String,
