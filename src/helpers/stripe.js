@@ -116,4 +116,4 @@ async function construct(body, sig, endpointSecret){
 //     console.log(`Unhandled event type ${event.type}`);
 // }
 
-module.exports = { createCheckoutSessions, createStripeCustomer, construct}
+module.exports = { createCheckoutSessions, construct}
