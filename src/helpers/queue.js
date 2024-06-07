@@ -55,14 +55,13 @@ const processJob = async (job) => {
         try {
 
             const { id } = job
-            console.log(id, job.data, 'stopBilling')
+            // console.log(id, job.data, 'stopBilling')
             const jobs = await agenda.jobs({ "data.deploymentId": id });
-            console.log(jobs)
             if (jobs.length === 0) {
                 return { message: 'Job not found' };
             }
             await jobs[0].remove();
-
+            await Billing.updateOne( { _id: job[0].attrs.data.billingId }, { status: "inactive"} )
             return { message: 'Job canceled and deleted successfully' };
         } catch (err) {
             console.error(`Error processing 'remove' job: ${err.message}`);
