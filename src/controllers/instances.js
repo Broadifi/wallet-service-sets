@@ -17,6 +17,15 @@ class instaceConfigController {
         }
     }
 
+    async get(req, res, next ) {
+        try {
+            const item = await instanceConfig.findById(req.params.id)
+            res.sendSuccessResponse( item )
+        } catch (e) {
+            next(e)
+        }
+    }
+
 }
 
 module.exports = { instaceConfigController: new instaceConfigController()}
