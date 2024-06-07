@@ -22,7 +22,9 @@ class WalletController {
       next(e)
     }
   }
-
+/** TODO
+ * add payment history
+ */
   async webohook (req, res, next) {
     try {
       const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET
@@ -50,7 +52,7 @@ class WalletController {
   async getWallet(req, res, next ) {
     try {
       const item = await Wallet.findOne({createdBy: req.user.userId}, { status: 1 , credit: 1}).lean()
-      item.credit = parseFloat(item.credit.toFixed(2))
+      item.credit = parseFloat(parseFloat(item.credit).toFixed(2))
       res.sendSuccessResponse(item)
     } catch (e) {
       next(e)
