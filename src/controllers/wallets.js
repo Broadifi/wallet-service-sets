@@ -54,7 +54,11 @@ class WalletController {
 
   async getWallet(req, res, next ) {
     try {
-      const item = await Wallet.findOne({createdBy: req.user.userId}, { status: 1 , credit: 1, _id: 0, currency: 1}).lean()
+      let item = await Wallet.findOne({createdBy: req.user.userId}, { status: 1 , credit: 1, _id: 0, currency: 1}).lean()
+      if( !item ) {
+        item =  (await Wallet.create({createdBy: req.user.userId } )).toJSON()
+        console.log(item)
+      }
       item.credit = parseFloat(parseFloat(item.credit).toFixed(2))
 
       const activeBills = await Billing.find({ isActive: true, userId: req.user.userId }).lean();
@@ -65,8 +69,8 @@ class WalletController {
       }, 0);
 
       const timeleftInHour = item.credit / costPerHour
-
-      res.sendSuccessResponse({ ...item, currentSpending: costPerHour, timeleftInHour: parseFloat(timeleftInHour.toFixed(2)) } )
+      const { status, credit, currency } = item
+      res.sendSuccessResponse({ status, credit, currency, currentSpending: costPerHour, timeleftInHour: parseFloat(timeleftInHour.toFixed(2)) || "N/A" } )
     } catch (e) {
       next(e)
     }

@@ -9,6 +9,7 @@ class Wallet {
     },
     credit: {
       type: String,
+      default: '0'
     },
     currency: {
       type: String,
