@@ -10,6 +10,10 @@ class Wallet {
     credit: {
       type: String,
     },
+    currency: {
+      type: String,
+      default: "USD"
+    },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId, // Assuming users are stored as ObjectIds in MongoDB
     },
