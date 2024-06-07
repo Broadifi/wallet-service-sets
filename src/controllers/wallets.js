@@ -1,6 +1,5 @@
 const { ApiError } = require("../helpers");
 const { createCheckoutSessions, construct } = require("../helpers/stripe");
-const { PaymentHistory } = require("../models/paymentHistory");
 const { Wallet } = require("../models/wallet");
 const mongoose = require('mongoose')
 class WalletController {
@@ -47,24 +46,6 @@ class WalletController {
       next(e)
     }
   }
-
-  // async useCredit(req, res, next ) {
-  //   try {
-  //     const { credit, service } = req.body
-  //     const wallet = await Wallet.findOne( { createdBy: req.user.userId } )
-  //     console.log(wallet)
-  //     if( wallet.credit < Number(credit)) {
-  //       throw new ApiError(null,'Insufficient credit', 402)
-  //     }
-  //     console.log(wallet.credit, credit)
-  //     const updateCredit = Number(wallet.credit) - Number(credit)
-  //     console.log(updateCredit)
-  //     const item = await Wallet.updateOne({ createdBy: req.user.userId}, { credit: updateCredit })
-  //     res.sendSuccessResponse( null, { updated: true } )
-  //     } catch (e) {
-  //     next(e)
-  //   }
-  // }
 
   async getWallet(req, res, next ) {
     try {
