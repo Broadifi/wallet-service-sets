@@ -51,7 +51,7 @@ class WalletController {
 
   async getWallet(req, res, next ) {
     try {
-      const item = await Wallet.findOne({createdBy: req.user.userId}, { status: 1 , credit: 1, _id: 0}).lean()
+      const item = await Wallet.findOne({createdBy: req.user.userId}, { status: 1 , credit: 1, _id: 0, currency: 1}).lean()
       item.credit = parseFloat(parseFloat(item.credit).toFixed(2))
       res.sendSuccessResponse(item)
     } catch (e) {
