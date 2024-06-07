@@ -11,11 +11,23 @@ class billingController {
             const limit = Math.ceil(req.query.limit) || 10
             const skip = (page - 1) * limit;
             const items = await Billing.find({ userId: req.user.userId } ).populate('instanceType').sort({ createdAt: -1 }).skip(skip).limit(limit).lean()
-            console.log(items)
             const totalCount = await Billing.countDocuments({ userId: req.user.userId })
             const totalPages = Math.ceil(totalCount / limit);
             const hasNext = page < totalPages;
-            res.sendSuccessResponse( items, { totalCount, hasNext, page } )
+
+            const res = items.map( item => {
+                return {
+                    _id: item._id,
+                    type: item.instanceType.availableFor,
+                    name: item.instanceType.name,
+                    startTime: item.startTime,
+                    endTime: item.endTime,
+                    hourUsed: parseFloat(item.durationHours.toFixed(2)),
+                    total: parseFloat(item.totalCost),
+                    currency: item.instanceType.currency
+                }
+            })
+            res.sendSuccessResponse( res, { totalCount, hasNext, page } )
         } catch (e) {
             next(e)
         }
