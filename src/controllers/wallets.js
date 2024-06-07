@@ -1,5 +1,6 @@
 const { ApiError } = require("../helpers");
 const { createCheckoutSessions, construct } = require("../helpers/stripe");
+const { Billing } = require("../models/billing");
 const { Wallet } = require("../models/wallet");
 const mongoose = require('mongoose')
 class WalletController {
@@ -55,11 +56,22 @@ class WalletController {
     try {
       const item = await Wallet.findOne({createdBy: req.user.userId}, { status: 1 , credit: 1, _id: 0, currency: 1}).lean()
       item.credit = parseFloat(parseFloat(item.credit).toFixed(2))
-      res.sendSuccessResponse(item)
+
+      const activeBills = await Billing.find({ isActive: true, userId: req.user.userId }).lean();
+      console.log(activeBills);
+
+      const costPerHour = activeBills.reduce((acc, bill) => {
+          return acc + parseFloat(bill.hourlyRate);
+      }, 0);
+
+      const timeleftInHour = item.credit / costPerHour
+
+      res.sendSuccessResponse({ ...item, currentSpending: costPerHour, timeleftInHour } )
     } catch (e) {
       next(e)
     }
   }
+
   
 }
 
