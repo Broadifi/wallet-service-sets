@@ -42,7 +42,7 @@ class App {
       res.sendSuccessResponse('Hello World');
     });
 
-    app.use('/api/v1/wallets', WalletRoutes)
+    app.use('/api/v1/wallet', WalletRoutes)
     app.use('/api/v1/instances', InstacesRoute)
     app.use('/api/v1/billings', BillingRoutes)
 
