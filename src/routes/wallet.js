@@ -9,7 +9,7 @@ class WalletRoutes {
   }
 
   initializeRoutes() {
-    this.router.post('/', checkLogin, WalletController.createCheckout)
+    this.router.post('/add-credit', checkLogin, WalletController.createCheckout)
     this.router.post('/use-credit', checkLogin, WalletController.useCredit)
     this.router.post('/webhook', WalletController.webohook)
     this.router.get('/', checkLogin, WalletController.getWallet)
