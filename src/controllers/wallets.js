@@ -28,7 +28,9 @@ class WalletController {
   async webohook (req, res, next) {
     try {
       const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET
+      console.log(endpointSecret)
       const sig = req.headers['stripe-signature'];
+      console.log(req.headers)
       let event = construct(req.body, sig, endpointSecret)
       console.log(event)
       const { type , data: { object: eventObj }} = event
