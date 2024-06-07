@@ -66,7 +66,7 @@ class WalletController {
 
       const timeleftInHour = item.credit / costPerHour
 
-      res.sendSuccessResponse({ ...item, currentSpending: costPerHour, timeleftInHour } )
+      res.sendSuccessResponse({ ...item, currentSpending: costPerHour, timeleftInHour: parseFloat(timeleftInHour.toFixed(2)) } )
     } catch (e) {
       next(e)
     }
