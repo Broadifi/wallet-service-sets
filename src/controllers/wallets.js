@@ -27,13 +27,13 @@ class WalletController {
  */
   async webohook (req, res, next) {
     try {
-      const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET
-      console.log(endpointSecret)
-      const sig = req.headers['stripe-signature'];
-      console.log(req.headers)
-      let event = construct(req.body, sig, endpointSecret)
-      console.log(event)
-      const { type , data: { object: eventObj }} = event
+      // const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET
+      // console.log(endpointSecret)
+      // const sig = req.headers['stripe-signature'];
+      // console.log(req.headers)
+      // let event = construct(req.body, sig, endpointSecret)
+      // console.log(event)
+      const { type , data: { object: eventObj }} = req.body
 
       if(type === 'checkout.session.completed' && eventObj.payment_status === 'paid' && eventObj.status === 'complete'){
         const isWalletExist = await Wallet.findOne( { createdBy: eventObj.client_reference_id  } )
