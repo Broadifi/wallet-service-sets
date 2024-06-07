@@ -18,8 +18,10 @@ const createCheckoutSessions = async ( price, userId, email ) => {
             currency: 'USD',
             unit_amount: price * 100,
             product_data: {
-              name: 'Credit'
-            }       
+              name: 'Credit',
+              images: ['https://img.freepik.com/free-vector/falling-dollar-coins-success-luck-money-investment-concept_1262-13463.jpg?t=st=1717755281~exp=1717758881~hmac=52d71e79ca0dc6cd78963802ca4ec45b0a61e69daca9dd9b549fb0d56b685e88&w=996']  
+            }     
+
           },
           quantity: 1
         }]
