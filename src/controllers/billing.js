@@ -58,7 +58,7 @@ class billingController {
             }, 0);
             console.log(costPerHour, totalSpent, ExpectedMonthlyCost);
     
-            res.sendSuccessResponse({ activeBillsCount: activeBills.length, costPerHour , ExpectedMonthlyCost: parseFloat( ExpectedMonthlyCost.toFixed(2)), totalSpent });
+            res.sendSuccessResponse({ activeBillsCount: activeBills.length, costPerHour , ExpectedMonthlyCost: parseFloat( ExpectedMonthlyCost.toFixed(2)), totalSpent, currency: "USD" });
         } catch (e) {
             next(e);
         }
