@@ -43,7 +43,7 @@ const processJob = async (job) => {
                 console.log(billing)
             }
 
-            const jobDetails = await agenda.every('2 minute', 'update billing hourly', { billingId: billing._id.toString() });
+            const jobDetails = await agenda.every('2 minute', 'update billing hourly', { billingId: billing._id.toString(), deploymentId: id });
             console.log('job details -------')
             return jobDetails
         } catch (error) {
@@ -55,8 +55,8 @@ const processJob = async (job) => {
         try {
 
             const { id } = job
-            console.log(id, job.data)
-            const jobs = await agenda.jobs({ "data.billingId": id });
+            console.log(id, job.data, 'stopBilling')
+            const jobs = await agenda.jobs({ "data.deploymentId": id });
             console.log(jobs)
             if (jobs.length === 0) {
                 return { message: 'Job not found' };
