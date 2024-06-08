@@ -58,7 +58,6 @@ class Billing {
 
   getModel() {
     // eslint-disable-next-line no-console
-    console.log('Billing model created');
     return mongoose.model('billings', this.schema);
   }
 }

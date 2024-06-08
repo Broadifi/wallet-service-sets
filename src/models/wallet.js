@@ -31,7 +31,6 @@ class Wallet {
 
   getModel() {
     // eslint-disable-next-line no-console
-    console.log('Wallet model created');
     return mongoose.model('wallets', this.schema);
   }
 }

@@ -32,7 +32,6 @@ class InstanceConfig {
 
 
   getModel() {
-    console.log('InstanceConfig model created');
     return mongoose.model('instance-config', this.schema);
   }
 }

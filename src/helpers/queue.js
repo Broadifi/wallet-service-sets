@@ -62,7 +62,7 @@ const processJob = async (job) => {
                 return { message: 'Job not found' };
             }
             await jobs[0].remove();
-            await Billing.updateOne( { _id: job[0].attrs.data.billingId }, { status: "inactive"} )
+            await Billing.updateOne( { _id: job[0].attrs.data.billingId }, { isActive: false } )
             return { message: 'Job canceled and deleted successfully' };
         } catch (err) {
             console.error(`Error processing 'remove' job: ${err.message}`);

@@ -21,5 +21,24 @@ function formatMongooseError( errorsObj ) {
     return errors;
 };
 
-module.exports = { SendSuccessResponse, ApiError, formatMongooseError };
+function formatHours(hoursDecimal) {
+    const duration = moment.duration(hoursDecimal, 'hours');
+    const hours = Math.floor(duration.asHours());
+    const minutes = duration.minutes();
+  
+    const hoursPart = hours > 0 ? `${hours} hour${hours !== 1 ? 's' : ''}` : '';
+    const minutesPart = minutes > 0 ? `${minutes} minute${minutes !== 1 ? 's' : ''}` : '';
+  
+    if (hoursPart && minutesPart) {
+      return `${hoursPart} ${minutesPart}`;
+    } else if (hoursPart) {
+      return hoursPart;
+    } else if (minutesPart) {
+      return minutesPart;
+    } else {
+      return '0 minutes';
+    }
+  }
+
+module.exports = { SendSuccessResponse, ApiError, formatMongooseError, formatHours };
 
