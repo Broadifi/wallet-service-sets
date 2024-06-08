@@ -45,7 +45,6 @@ class billingController {
     async currentBillingInfo(req, res, next) {
         try {
             const activeBills = await Billing.find({ isActive: true, userId: req.user.userId }).lean();
-            console.log(activeBills);
     
             const costPerHour = activeBills.reduce((acc, bill) => {
                 return acc + parseFloat(bill.hourlyRate);
@@ -56,7 +55,6 @@ class billingController {
             const totalSpent = totalSpentData.reduce((acc, bill) => {
                 return acc + parseFloat(bill.totalCost);
             }, 0);
-            console.log(costPerHour, totalSpent, ExpectedMonthlyCost);
     
             res.sendSuccessResponse({ activeBillsCount: activeBills.length, costPerHour , ExpectedMonthlyCost: parseFloat( ExpectedMonthlyCost.toFixed(2)), totalSpent, currency: "USD" });
         } catch (e) {
