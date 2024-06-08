@@ -22,7 +22,7 @@ class billingController {
                     name: item.instanceType.name,
                     startTime: item.startTime,
                     endTime: item.endTime,
-                    hourUsed: parseFloat(item.durationHours.toFixed(2)),
+                    hourUsed: item.durationHours,
                     total: parseFloat(item.totalCost),
                     currency: item.instanceType.currency
                 }
