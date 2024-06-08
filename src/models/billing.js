@@ -11,6 +11,14 @@ class Billing {
       ref: 'instance-config',
       required: true,
     },
+    usedBy:{
+      id: {
+        type: mongoose.Schema.Types.ObjectId,
+      },
+      type: {
+        type: String,
+      }
+    },
     isActive: {
       type: Boolean,
       default: true

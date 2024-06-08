@@ -30,14 +30,15 @@ const processJob = async (job) => {
                 throw new Error('Payment required');
             }
 
-            let billing = await Billing.findOne({ userId: document.createdBy, instanceDetails: instanceDetails.instanceType } );
+            let billing = await Billing.findOne({ userId: document.createdBy, instanceDetails: instanceDetails.instanceType, 'usedBy.id': id, 'usedBy.type': type  } );
       
             if (!billing) {
                 billing = new Billing({ 
                     userId: document.createdBy, 
                     instanceType: document.instanceType,
                     hourlyRate: instanceDetails.hourlyRate, 
-                    startTime: document.createdAt
+                    startTime: document.createdAt,
+                    usedBy: { id: id, type: type} 
                 });
                 await billing.save();
                 console.log(billing)
