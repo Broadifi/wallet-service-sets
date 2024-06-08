@@ -43,7 +43,8 @@ const processJob = async (job) => {
                 await billing.save();
                 console.log(billing)
             }
-
+            
+            await agenda.agendaJobDefine(`${billing._id.toString()}`)
             const jobDetails = await agenda.every('2 minute', `${billing._id.toString()}`, { billingId: billing._id.toString(), deploymentId: id });
             console.log('job details -------')
             return jobDetails
