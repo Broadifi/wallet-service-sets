@@ -43,7 +43,7 @@ const processJob = async (job) => {
                 console.log(billing)
             }
 
-            const jobDetails = await agenda.every('2 minute', 'update billing hourly', { billingId: billing._id.toString(), deploymentId: id });
+            const jobDetails = await agenda.every('2 minute', `${billing._id.toString()}`, { billingId: billing._id.toString(), deploymentId: id });
             console.log('job details -------')
             return jobDetails
         } catch (error) {
