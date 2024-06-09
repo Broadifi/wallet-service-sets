@@ -17,7 +17,7 @@ class billingController {
             const hasNext = page < totalPages;
 
             const result = []
-            for( let item in items ) {
+            for( let item of items ) {
                 console.log(item)
                 // const collection = mongoose.connection.db.collection(item.usedBy?.type)
                 // const document = await collection.findOne({_id: new mongoose.mongo.ObjectId(item.usedBy?.id) })
