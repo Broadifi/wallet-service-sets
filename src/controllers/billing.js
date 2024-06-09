@@ -18,9 +18,10 @@ class billingController {
 
             const result = []
             for( let item in items ) {
+                console.log(item)
                 const collection = mongoose.connection.db.collection(item.usedBy?.type)
-                const document = await collection.findOne({_id: new mongoose.mongo.ObjectId(item.usedBy?.id) })
-
+                const document = await collection.findOne({_id: new mongoose.mongo.ObjectId(item.usedBy?.id) }).toJSON()
+                console.log(document)
                 result.push({
                     _id: (item._id).slice(-4),
                     isActive: item.isActive,
@@ -36,6 +37,7 @@ class billingController {
             }
             res.sendSuccessResponse( result, { totalCount, hasNext, page } )
         } catch (e) {
+            console.log(e)
             next(e)
         }
     }
