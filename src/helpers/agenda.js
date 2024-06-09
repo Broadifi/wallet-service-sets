@@ -1,5 +1,4 @@
 const Agenda = require('agenda');
-const mongoose = require('mongoose');
 const { Billing } = require('../models/billing');
 const { Wallet } = require('../models/wallet');
 const moment = require('moment');

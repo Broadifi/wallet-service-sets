@@ -7,7 +7,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const { Database } = require('./config');
 const { App } = require('./src/App');
-const { agenda, jobDefinitions } = require('./src/helpers/agenda');
+const { agenda, jobDefinitions, defineHourlyBillingJob } = require('./src/helpers/agenda');
 
 // Define the job schema (matching Agenda's job document structure)
 const agendaJobSchema = new mongoose.Schema({}, { collection: 'agendaJobs', strict: false });
