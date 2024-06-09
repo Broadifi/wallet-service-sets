@@ -24,6 +24,7 @@ const defineHourlyBillingJob = async ( agendaJobName) => {
       }
   
       if (float(wallet.credit) >= float(billing.hourlyRate)) {
+        console.log("in")
         wallet.credit = float(wallet.credit) - float(billing.hourlyRate);
         await wallet.save();
 
