@@ -7,9 +7,6 @@ const { instanceConfig } = require("../models/instance");
 const mongoose = require("mongoose");
 const { float } = require(".");
 
-(async  () => {
-    await agenda.start();
-  })();
 
 const processJob = async (job) => {
     if (job.name === 'startBilling') {

@@ -23,6 +23,8 @@ const initApp = async () => {
       express,
     });
     app.init();
+    
+    await agenda.start();
     const jobs = await AgendaJobs.find();
     jobs.forEach(job => {
       const jobName = job.name;
