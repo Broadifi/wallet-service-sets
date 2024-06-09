@@ -59,14 +59,19 @@ class WalletController {
       item.credit = parseFloat(parseFloat(item.credit).toFixed(2))
 
       const activeBills = await Billing.find({ isActive: true, userId: req.user.userId }).lean();
+      let costPerHour = 0;          
+      let timeleftInHour = 'N/A'; 
 
-      const costPerHour = activeBills.reduce((acc, bill) => {
+      if( activeBills.length !== 0 ) {
+        costPerHour = activeBills.reduce((acc, bill) => {
           return acc + parseFloat(bill.hourlyRate);
-      }, 0);
+        }, 0);
 
-      const timeleftInHour = formatHours(item.credit / costPerHour)
+        timeleftInHour = formatHours(item.credit / costPerHour)
+      }
       const { status, credit, currency } = item
-      res.sendSuccessResponse({ status, credit, currency, currentSpending: costPerHour, timeleftInHour: timeleftInHour || "N/A" } )
+
+      res.sendSuccessResponse({ status, credit, currency, currentSpending: costPerHour, timeleftInHour  } )
     } catch (e) {
       next(e)
     }
