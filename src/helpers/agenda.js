@@ -28,7 +28,7 @@ const defineHourlyBillingJob = async ( agendaJobName) => {
         await wallet.save();
 
         billing.totalCost = float(billing.totalCost) + float(billing.hourlyRate);
-        billing.durationHours = formatHours(moment.duration(moment().diff(moment(billing.startTime))).asHours())
+        billing.durationHours = moment.duration(moment().diff(moment(billing.startTime))).asHours()
         await billing.save();
 
         jobDefinitions.add(agendaJobName);
