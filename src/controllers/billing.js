@@ -19,21 +19,21 @@ class billingController {
             const result = []
             for( let item in items ) {
                 console.log(item)
-                const collection = mongoose.connection.db.collection(item.usedBy?.type)
-                const document = await collection.findOne({_id: new mongoose.mongo.ObjectId(item.usedBy?.id) })
-                console.log(document)
-                result.push({
-                    _id: (item._id).slice(-4),
-                    isActive: item.isActive,
-                    name: (document.name).includes('/') ? (document.name).split('/')[1] : document.name,
-                    type: item.usedBy?.type,
-                    deployedOn: item.instanceType.name,
-                    startTime: item.startTime,
-                    endTime: item.endTime || null,
-                    hourUsed: formatHours(item.durationHours),
-                    total: parseFloat(item.totalCost),
-                    currency: item.instanceType.currency
-                })
+                // const collection = mongoose.connection.db.collection(item.usedBy?.type)
+                // const document = await collection.findOne({_id: new mongoose.mongo.ObjectId(item.usedBy?.id) })
+                // console.log(document)
+                // result.push({
+                //     _id: (item._id).slice(-4),
+                //     isActive: item.isActive,
+                //     name: (document.name).includes('/') ? (document.name).split('/')[1] : document.name,
+                //     type: item.usedBy?.type,
+                //     deployedOn: item.instanceType.name,
+                //     startTime: item.startTime,
+                //     endTime: item.endTime || null,
+                //     hourUsed: formatHours(item.durationHours),
+                //     total: parseFloat(item.totalCost),
+                //     currency: item.instanceType.currency
+                // })
             }
             res.sendSuccessResponse( result, { totalCount, hasNext, page } )
         } catch (e) {
