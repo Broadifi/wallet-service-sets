@@ -60,7 +60,7 @@ class WalletController {
 
       const activeBills = await Billing.find({ isActive: true, userId: req.user.userId }).lean();
       let costPerHour = 0;          
-      let timeleftInHour = 'N/A'; 
+      let timeleftInHour = null; 
 
       if( activeBills.length !== 0 ) {
         costPerHour = activeBills.reduce((acc, bill) => {
