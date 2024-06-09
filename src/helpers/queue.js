@@ -16,10 +16,8 @@ const processJob = async (job) => {
         try {
             const { type } = job.data;
             const { id } = job
-            console.log( type, id )
             const collection = mongoose.connection.db.collection(type)
             const document = await collection.findOne({_id: new mongoose.mongo.ObjectId(id) })
-            console.log(document)
             const instanceDetails = await instanceConfig.findOne({ _id: document.instanceType })
             const wallet = await Wallet.findOne({ createdBy: document.createdBy });
 
@@ -52,20 +50,19 @@ const processJob = async (job) => {
         }
 
     } else if (job.name === 'stopBilling') {
-        // try {
-        //     const { id } = job
-        //     // console.log(id, job.data, 'stopBilling')
-        //     const jobs = await agenda.jobs({ "data.deploymentId": id });
-        //     if (jobs.length === 0) {
-        //         return { message: 'Job not found' };
-        //     }
-        //     await jobs[0].remove();
-        //     await Billing.updateOne( { _id: job[0].attrs.data.billingId }, { isActive: false } )
-        //     return { message: 'Job canceled and deleted successfully' };
-        // } catch (err) {
-        //     console.error(`Error processing 'remove' job: ${err.message}`);
-        //     throw err;
-        // }
+        try {
+            const { id } = job
+            const jobs = await agenda.jobs({ "data.deploymentId": id });
+            if (jobs.length === 0) {
+                return { message: 'Job not found' };
+            }
+            await jobs[0].remove();
+            await Billing.updateOne( { _id: job[0].attrs.data.billingId }, { isActive: false } )
+            return { message: 'Job canceled and deleted successfully' };
+        } catch (err) {
+            console.error(`Error processing 'stopBilling' job: ${err.message}`);
+            throw err;
+        }
     }
 };
 

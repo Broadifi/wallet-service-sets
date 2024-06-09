@@ -1,6 +1,7 @@
 const { instanceType } = require("../../config")
 const { ApiError, formatHours } = require("../helpers")
 const { Billing } = require("../models/billing")
+const mongoose = require("mongoose")
 
 
 class billingController {
@@ -15,13 +16,18 @@ class billingController {
             const totalPages = Math.ceil(totalCount / limit);
             const hasNext = page < totalPages;
 
-            const result = items.map( item => {
+            const result = items.map( async (item) => {
+                const collection = mongoose.connection.db.collection(item.usedBy?.type)
+                const document = await collection.findOne({_id: new mongoose.mongo.ObjectId(item.usedBy?.id) })
+
                 return {
-                    _id: item._id,
-                    type: item.instanceType.availableFor,
-                    name: item.instanceType.name,
+                    _id: (item._id).slice(-4),
+                    isActive: item.isActive,
+                    name: (document.name).includes('/') ? (document.name).split('/')[1] : document.name,
+                    type: item.usedBy?.type,
+                    deployedOn: item.instanceType.name,
                     startTime: item.startTime,
-                    endTime: item.endTime || '-',
+                    endTime: item.endTime || null,
                     hourUsed: formatHours(item.durationHours),
                     total: parseFloat(item.totalCost),
                     currency: item.instanceType.currency
