@@ -66,13 +66,12 @@ class WalletController {
 
       const timeleftInHour = formatHours(item.credit / costPerHour)
       const { status, credit, currency } = item
-      res.sendSuccessResponse({ status, credit, currency, currentSpending: costPerHour, timeleftInHour: parseFloat(timeleftInHour.toFixed(2)) || "N/A" } )
+      res.sendSuccessResponse({ status, credit, currency, currentSpending: costPerHour, timeleftInHour: timeleftInHour || "N/A" } )
     } catch (e) {
       next(e)
     }
   }
 
-  
 }
 
 module.exports = {WalletController: new WalletController()}
