@@ -36,7 +36,7 @@ const defineHourlyBillingJob = async ( agendaJobName) => {
       } else {
         const jobs = await agenda.jobs({ "data.billingId": billingId });
         await jobs[0].remove();
-        await Billing.updateOne( { _id: job[0].attrs.data.billingId }, { isActive: false, endTime: moment().toISOString() })
+        await Billing.updateOne( { _id: jobs[0].attrs.data.billingId }, { isActive: false, endTime: moment().toISOString() })
         jobDefinitions.delete(agendaJobName);
         // Handle insufficient credit (e.g., stop service, notify user)
         console.log('Insufficient credit. Service will be stopped for user:', billing.userId);
