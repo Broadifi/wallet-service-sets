@@ -36,7 +36,7 @@ const defineHourlyBillingJob = async ( agendaJobName) => {
       } else {
         console.log('delete due to low credit')
         const jobs = await agenda.jobs({ "data.billingId": billingId });
-        console.log(jobs)
+        console.log(jobs.length)
         if (!jobs.length === 0) {
           await jobs[0].remove();
           await Billing.updateOne( { _id: job[0].attrs.data.billingId }, { isActive: false, endTime: moment().toISOString() })
