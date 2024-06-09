@@ -34,7 +34,7 @@ const processJob = async (job) => {
                     instanceType: document.instanceType,
                     hourlyRate: instanceDetails.hourlyRate, 
                     startTime: document.createdAt,
-                    usedBy: { id: id, type: type} 
+                    usedBy: { id: id, type: type, name: (document.name).includes('/') ? (document.name).split('/')[1] : document.name } 
                 });
                 await billing.save();
             }

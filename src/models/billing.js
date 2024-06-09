@@ -17,6 +17,9 @@ class Billing {
       },
       type: {
         type: String,
+      },
+      name: {
+        type: String
       }
     },
     isActive: {
