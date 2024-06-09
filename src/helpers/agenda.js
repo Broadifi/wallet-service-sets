@@ -3,6 +3,7 @@ const { Billing } = require('../models/billing');
 const { Wallet } = require('../models/wallet');
 const moment = require('moment');
 const { formatHours, float } = require('.');
+const { publishMessage } = require('./publisher');
 
 const agenda = new Agenda({ db: { address: process.env.MONGODB_URI, collection: 'agendaJobs', options: { useNewUrlParser: true, useUnifiedTopology: true } } });
 
@@ -33,12 +34,16 @@ const defineHourlyBillingJob = async ( agendaJobName) => {
 
         jobDefinitions.add(agendaJobName);
       } else {
+
         const jobs = await agenda.jobs({ "data.billingId": billingId });
         await jobs[0].remove();
         await Billing.updateOne( { _id: jobs[0].attrs.data.billingId }, { isActive: false, endTime: moment().toISOString() })
         jobDefinitions.delete(agendaJobName);
         // Handle insufficient credit (e.g., stop service, notify user)
         console.log('Insufficient credit. Service will be stopped for user:', billing.userId);
+
+        publishMessage( jobs[0].attrs.data.usedBy.type, JSON.stringify({ action: 'delete', data: { deploymentId: jobs[0].attrs.data.usedBy.id }}))
+
       }
       console.log('Billing updated:', billingId);
       return true;
