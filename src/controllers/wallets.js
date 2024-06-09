@@ -1,10 +1,10 @@
-const { ApiError } = require("../helpers");
+const { ApiError, formatHours } = require("../helpers");
 const { createCheckoutSessions, construct } = require("../helpers/stripe");
 const { Billing } = require("../models/billing");
 const { Wallet } = require("../models/wallet");
 const mongoose = require('mongoose')
 class WalletController {
-  
+
   async createCheckout( req, res, next ) {
     try {
       const { amount } = req.body
@@ -64,7 +64,7 @@ class WalletController {
           return acc + parseFloat(bill.hourlyRate);
       }, 0);
 
-      const timeleftInHour = item.credit / costPerHour
+      const timeleftInHour = formatHours(item.credit / costPerHour)
       const { status, credit, currency } = item
       res.sendSuccessResponse({ status, credit, currency, currentSpending: costPerHour, timeleftInHour: parseFloat(timeleftInHour.toFixed(2)) || "N/A" } )
     } catch (e) {

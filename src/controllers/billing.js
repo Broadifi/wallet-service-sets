@@ -18,10 +18,8 @@ class billingController {
 
             const result = []
             for( let item of items ) {
-                console.log(item)
                 const collection = mongoose.connection.db.collection(item.usedBy?.type)
                 const document = await collection.findOne({_id: new mongoose.mongo.ObjectId(item.usedBy?.id) })
-                console.log(document)
                 result.push({
                     _id: String(item._id).slice(-4),
                     isActive: item.isActive,
