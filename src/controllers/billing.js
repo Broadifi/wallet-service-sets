@@ -1,5 +1,5 @@
 const { instanceType } = require("../../config")
-const { ApiError } = require("../helpers")
+const { ApiError, formatHours } = require("../helpers")
 const { Billing } = require("../models/billing")
 
 
@@ -21,8 +21,8 @@ class billingController {
                     type: item.instanceType.availableFor,
                     name: item.instanceType.name,
                     startTime: item.startTime,
-                    endTime: item.endTime,
-                    hourUsed: item.durationHours,
+                    endTime: item.endTime || '-',
+                    hourUsed: formatHours(item.durationHours),
                     total: parseFloat(item.totalCost),
                     currency: item.instanceType.currency
                 }

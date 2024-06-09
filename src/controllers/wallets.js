@@ -4,9 +4,7 @@ const { Billing } = require("../models/billing");
 const { Wallet } = require("../models/wallet");
 const mongoose = require('mongoose')
 class WalletController {
-
-
-
+  
   async createCheckout( req, res, next ) {
     try {
       const { amount } = req.body
@@ -56,13 +54,11 @@ class WalletController {
     try {
       let item = await Wallet.findOne({createdBy: req.user.userId}, { status: 1 , credit: 1, _id: 0, currency: 1}).lean()
       if( !item ) {
-        item =  (await Wallet.create({createdBy: req.user.userId } )).toJSON()
-        console.log(item)
+        item = (await Wallet.create({createdBy: req.user.userId } )).toJSON()
       }
       item.credit = parseFloat(parseFloat(item.credit).toFixed(2))
 
       const activeBills = await Billing.find({ isActive: true, userId: req.user.userId }).lean();
-      console.log(activeBills);
 
       const costPerHour = activeBills.reduce((acc, bill) => {
           return acc + parseFloat(bill.hourlyRate);
