@@ -20,7 +20,7 @@ class billingController {
             for( let item in items ) {
                 console.log(item)
                 const collection = mongoose.connection.db.collection(item.usedBy?.type)
-                const document = await collection.findOne({_id: new mongoose.mongo.ObjectId(item.usedBy?.id) }).lean()
+                const document = await collection.findOne({_id: new mongoose.mongo.ObjectId(item.usedBy?.id) })
                 console.log(document)
                 result.push({
                     _id: (item._id).slice(-4),
