@@ -20,6 +20,7 @@ class billingController {
                     name: item.usedBy.name,
                     type: item.usedBy.type,
                     deployedOn: item.instanceType.name,
+                    hourlyRate: item.hourlyRate,
                     startTime: item.startTime,
                     endTime: item.endTime || null,
                     hourUsed: formatHours(item.durationHours),
