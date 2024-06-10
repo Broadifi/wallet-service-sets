@@ -1,5 +1,6 @@
-const { ApiError, formatHours } = require("../helpers")
+const { ApiError, formatHours, float } = require("../helpers")
 const { Billing } = require("../models/billing")
+const { float } = require('../helpers')
 
 
 class billingController {
@@ -24,7 +25,7 @@ class billingController {
                     startTime: item.startTime,
                     endTime: item.endTime || null,
                     hourUsed: formatHours(item.durationHours),
-                    total: parseFloat(item.totalCost),
+                    total: float(float(item.totalCost).toFixed(4)),
                     currency: item.instanceType.currency
                 }
             })
