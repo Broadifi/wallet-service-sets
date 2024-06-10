@@ -1,7 +1,5 @@
 const { ApiError, formatHours, float } = require("../helpers")
 const { Billing } = require("../models/billing")
-const { float } = require('../helpers')
-
 
 class billingController {
 
