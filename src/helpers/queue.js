@@ -1,11 +1,12 @@
 const { Worker } = require("bullmq");
 const { Billing } = require("../models/billing");
-const { agenda, defineHourlyBillingJob } = require("./agenda");
+const { agenda, defineHourlyBillingJob, jobDefinitions } = require("./agenda");
 const { redisClient } = require("./redis");
 const { Wallet } = require("../models/wallet");
 const { instanceConfig } = require("../models/instance");
 const mongoose = require("mongoose");
 const { float } = require(".");
+const moment = require("moment");
 
 
 const processJob = async (job) => {
@@ -50,11 +51,9 @@ const processJob = async (job) => {
         try {
             const { id } = job
             const jobs = await agenda.jobs({ "data.usedBy.id": id });
-            if (jobs.length === 0) {
-                return { message: 'Job not found' };
-            }
             await jobs[0].remove();
-            await Billing.updateOne( { _id: job[0].attrs.data.billingId }, { isActive: false } )
+            await Billing.updateOne( { _id: jobs[0].attrs.data.billingId }, { isActive: false, endTime: moment().toISOString() } )
+            jobDefinitions.delete(jobs[0].attrs.data.billingId);
             return { message: 'Job canceled and deleted successfully' };
         } catch (err) {
             console.error(`Error processing 'stopBilling' job: ${err.message}`);
