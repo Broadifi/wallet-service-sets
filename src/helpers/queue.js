@@ -40,7 +40,7 @@ const processJob = async (job) => {
                 await billing.save();
             }
             await defineHourlyBillingJob(`${billing._id.toString()}`);
-            const jobDetails = await agenda.every('1 minute', `${billing._id.toString()}`, { billingId: billing._id.toString(),  usedBy: { id: id, type: type, name: (document.name).includes('/') ? (document.name).split('/')[1] : document.name }  });
+            const jobDetails = await agenda.every('1 hour', `${billing._id.toString()}`, { billingId: billing._id.toString(),  usedBy: { id: id, type: type, name: (document.name).includes('/') ? (document.name).split('/')[1] : document.name }  });
             return jobDetails
         } catch (error) {
             console.error(`Error processing 'startBilling' job: ${error.message}`);
