@@ -7,6 +7,7 @@ const { instanceConfig } = require("../models/instance");
 const mongoose = require("mongoose");
 const { float } = require(".");
 const moment = require("moment");
+const logger = require("./logger");
 
 
 const processJob = async (job) => {
@@ -28,7 +29,6 @@ const processJob = async (job) => {
             }
 
             let billing = await Billing.findOne({ userId: document.createdBy, instanceDetails: instanceDetails.instanceType, 'usedBy.id': id, 'usedBy.type': type });
-            console.log( billing );
             if (!billing) {
                 billing = new Billing({ 
                     userId: document.createdBy, 
@@ -66,25 +66,26 @@ const processJob = async (job) => {
 const billingTrackerQueue = new Worker( 'billing-tracker', processJob, { connection: redisClient, concurrency: 3 });
 
 billingTrackerQueue.on('ready', () => {
-    console.log('billing-tracker is Ready!');
+    logger.success('billing-tracker is Ready!');
+    
 })
 
 billingTrackerQueue.on('active', (job) => {
-    console.info(` [Id: ${job.id}] | billing-tracker Started`);
+    logger.info(` [Id: ${job.id}] | billing Started`);
 });
   
 billingTrackerQueue.on('completed', async (job) => {
     await job.remove();
-    console.log(` [Id: ${job.id}] | billing-tracker Completed & Removed from Queue`);
+    logger.success(` [Id: ${job.id}] | billing Completed & Removed from Queue`);
 });
     
 billingTrackerQueue.on('failed',async (job, err) => {
-    console.error(` [Id: ${job.id}] | billing-tracker Failed! | ${err}`);
+    logger.warn(` [Id: ${job.id}] | billing Failed! | ${err}`);
     if (job.attemptsMade < job.opts.attempts) {
-        console.info(` [Id: ${job.id}] | billing-tracker will Retry after 30s`); 
+        logger.info(` [Id: ${job.id}] | billing will Retry after 30s`); 
     }else{
         await job.remove();
-        console.warn(`[Id: ${job.id}] | billing-tracker Max retry Reached | Removed from Queue`);
+        logger.error(`[Id: ${job.id}] | billing Max retry Reached | Removed from Queue`);
     } 
 });
 

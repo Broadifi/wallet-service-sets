@@ -19,6 +19,7 @@
   "dependencies": {
     "agenda": "^5.0.0",
     "bullmq": "^5.7.15",
+    "consola": "^3.2.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
