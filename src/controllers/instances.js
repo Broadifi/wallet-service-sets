@@ -10,7 +10,7 @@ class instaceConfigController {
             if( !type ||  !instanceType.includes(type)  ) {
                 throw new ApiError('VALIDATION_ERROR', 'Send proper type')
             }
-            const items = await instanceConfig.find({ availableFor: type } ).lean()
+            const items = await instanceConfig.find({ availableFor: type }, { resources: 0} ).lean()
             res.sendSuccessResponse( items )
         } catch (e) {
             next(e)
@@ -19,7 +19,7 @@ class instaceConfigController {
 
     async get(req, res, next ) {
         try {
-            const item = await instanceConfig.findById(req.params.id)
+            const item = await instanceConfig.findById(req.params.id, { resources: 0} )
             res.sendSuccessResponse( item )
         } catch (e) {
             next(e)
