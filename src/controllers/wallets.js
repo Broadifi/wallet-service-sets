@@ -1,11 +1,9 @@
-const { ApiError } = require("../helpers");
+const { ApiError, formatHours } = require("../helpers");
 const { createCheckoutSessions, construct } = require("../helpers/stripe");
 const { Billing } = require("../models/billing");
 const { Wallet } = require("../models/wallet");
 const mongoose = require('mongoose')
 class WalletController {
-
-
 
   async createCheckout( req, res, next ) {
     try {
@@ -40,7 +38,6 @@ class WalletController {
         const isWalletExist = await Wallet.findOne( { createdBy: eventObj.client_reference_id  } )
         if( isWalletExist ) {
           const credit = Number(isWalletExist.credit) + ( eventObj.amount_total / 100 )
-          console.log(credit)
           const r = await Wallet.updateOne({createdBy: eventObj.client_reference_id}, {credit})
           return res.send({ data: r });
         }
@@ -56,27 +53,29 @@ class WalletController {
     try {
       let item = await Wallet.findOne({createdBy: req.user.userId}, { status: 1 , credit: 1, _id: 0, currency: 1}).lean()
       if( !item ) {
-        item =  (await Wallet.create({createdBy: req.user.userId } )).toJSON()
-        console.log(item)
+        item = (await Wallet.create({createdBy: req.user.userId } )).toJSON()
       }
       item.credit = parseFloat(parseFloat(item.credit).toFixed(2))
 
       const activeBills = await Billing.find({ isActive: true, userId: req.user.userId }).lean();
-      console.log(activeBills);
+      let costPerHour = 0;          
+      let timeleftInHour = null; 
 
-      const costPerHour = activeBills.reduce((acc, bill) => {
+      if( activeBills.length !== 0 ) {
+        costPerHour = activeBills.reduce((acc, bill) => {
           return acc + parseFloat(bill.hourlyRate);
-      }, 0);
+        }, 0);
 
-      const timeleftInHour = item.credit / costPerHour
+        timeleftInHour = formatHours(item.credit / costPerHour)
+      }
       const { status, credit, currency } = item
-      res.sendSuccessResponse({ status, credit, currency, currentSpending: costPerHour, timeleftInHour: parseFloat(timeleftInHour.toFixed(2)) || "N/A" } )
+
+      res.sendSuccessResponse({ status, credit, currency, currentSpending: costPerHour, timeleftInHour  } )
     } catch (e) {
       next(e)
     }
   }
 
-  
 }
 
 module.exports = {WalletController: new WalletController()}

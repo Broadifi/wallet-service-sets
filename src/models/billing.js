@@ -11,6 +11,17 @@ class Billing {
       ref: 'instance-config',
       required: true,
     },
+    usedBy:{
+      id: {
+        type: mongoose.Schema.Types.ObjectId,
+      },
+      type: {
+        type: String,
+      },
+      name: {
+        type: String
+      }
+    },
     isActive: {
       type: Boolean,
       default: true
@@ -50,7 +61,6 @@ class Billing {
 
   getModel() {
     // eslint-disable-next-line no-console
-    console.log('Billing model created');
     return mongoose.model('billings', this.schema);
   }
 }

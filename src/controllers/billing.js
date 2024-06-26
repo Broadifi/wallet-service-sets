@@ -1,7 +1,5 @@
-const { instanceType } = require("../../config")
-const { ApiError } = require("../helpers")
+const { ApiError, formatHours, float } = require("../helpers")
 const { Billing } = require("../models/billing")
-
 
 class billingController {
 
@@ -16,19 +14,23 @@ class billingController {
             const hasNext = page < totalPages;
 
             const result = items.map( item => {
-                return {
-                    _id: item._id,
-                    type: item.instanceType.availableFor,
-                    name: item.instanceType.name,
+               return {
+                    _id: String(item._id).slice(-4),
+                    isActive: item.isActive,
+                    name: item.usedBy.name,
+                    type: item.usedBy.type,
+                    deployedOn: item.instanceType.name,
+                    hourlyRate: item.hourlyRate,
                     startTime: item.startTime,
-                    endTime: item.endTime,
-                    hourUsed: parseFloat(item.durationHours.toFixed(2)),
-                    total: parseFloat(item.totalCost),
+                    endTime: item.endTime || null,
+                    hourUsed: formatHours(item.durationHours),
+                    total: float(float(item.totalCost).toFixed(4)),
                     currency: item.instanceType.currency
                 }
             })
             res.sendSuccessResponse( result, { totalCount, hasNext, page } )
         } catch (e) {
+            console.log(e)
             next(e)
         }
     }
@@ -45,7 +47,6 @@ class billingController {
     async currentBillingInfo(req, res, next) {
         try {
             const activeBills = await Billing.find({ isActive: true, userId: req.user.userId }).lean();
-            console.log(activeBills);
     
             const costPerHour = activeBills.reduce((acc, bill) => {
                 return acc + parseFloat(bill.hourlyRate);
@@ -56,7 +57,6 @@ class billingController {
             const totalSpent = totalSpentData.reduce((acc, bill) => {
                 return acc + parseFloat(bill.totalCost);
             }, 0);
-            console.log(costPerHour, totalSpent, ExpectedMonthlyCost);
     
             res.sendSuccessResponse({ activeBillsCount: activeBills.length, costPerHour , ExpectedMonthlyCost: parseFloat( ExpectedMonthlyCost.toFixed(2)), totalSpent, currency: "USD" });
         } catch (e) {

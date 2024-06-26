@@ -20,6 +20,10 @@ class InstanceConfig {
             type: String,
             default: 'USD'
         },
+        resources: {
+            limits: Object,
+            requests: Object
+        },
         vCPU: String,
         RAM: Number, // in MB
         description: String,
@@ -32,7 +36,6 @@ class InstanceConfig {
 
 
   getModel() {
-    console.log('InstanceConfig model created');
     return mongoose.model('instance-config', this.schema);
   }
 }

@@ -1,70 +1,62 @@
 const { Worker } = require("bullmq");
 const { Billing } = require("../models/billing");
-const agenda = require("./agenda");
+const { agenda, defineHourlyBillingJob, jobDefinitions } = require("./agenda");
 const { redisClient } = require("./redis");
 const { Wallet } = require("../models/wallet");
 const { instanceConfig } = require("../models/instance");
-const { default: mongoose } = require("mongoose");
+const mongoose = require("mongoose");
+const { float } = require(".");
+const moment = require("moment");
+const logger = require("./logger");
 
-(async  () => {
-    await agenda.start();
-  })();
 
 const processJob = async (job) => {
     if (job.name === 'startBilling') {
-        const { type } = job.data;
-        const { id } = job
         try {
-            console.log( type, id )
+            const { type } = job.data;
+            const { id } = job
             const collection = mongoose.connection.db.collection(type)
             const document = await collection.findOne({_id: new mongoose.mongo.ObjectId(id) })
-            console.log(document)
             const instanceDetails = await instanceConfig.findOne({ _id: document.instanceType })
-
-            if( !document ) {
-                return false
-            }
             const wallet = await Wallet.findOne({ createdBy: document.createdBy });
 
-            if (!wallet || parseFloat(wallet.credit) < parseFloat(instanceDetails.hourlyRate)) {
+            if( !document ) {
+                throw new Error('Not found');
+            }
+
+            if (!wallet || (float(wallet.credit) < float(instanceDetails.hourlyRate))) {
                 throw new Error('Payment required');
             }
 
-            let billing = await Billing.findOne({ userId: document.createdBy, instanceDetails: instanceDetails.instanceType } );
-      
+            let billing = await Billing.findOne({ userId: document.createdBy, instanceDetails: instanceDetails.instanceType, 'usedBy.id': id, 'usedBy.type': type });
             if (!billing) {
                 billing = new Billing({ 
                     userId: document.createdBy, 
                     instanceType: document.instanceType,
                     hourlyRate: instanceDetails.hourlyRate, 
-                    startTime: document.createdAt
+                    startTime: document.createdAt,
+                    usedBy: { id: id, type: type, name: (document.name).includes('/') ? (document.name).split('/')[1] : document.name } 
                 });
                 await billing.save();
-                console.log(billing)
             }
-
-            const jobDetails = await agenda.every('2 minute', 'update billing hourly', { billingId: billing._id.toString(), deploymentId: id });
-            console.log('job details -------')
+            await defineHourlyBillingJob(`${billing._id.toString()}`);
+            const jobDetails = await agenda.every('1 hour', `${billing._id.toString()}`, { billingId: billing._id.toString(),  usedBy: { id: id, type: type, name: (document.name).includes('/') ? (document.name).split('/')[1] : document.name }  });
             return jobDetails
         } catch (error) {
-            console.error(`Error processing 'add' job: ${error.message}`);
+            console.error(`Error processing 'startBilling' job: ${error.message}`);
             throw error;
         }
 
     } else if (job.name === 'stopBilling') {
         try {
-
             const { id } = job
-            // console.log(id, job.data, 'stopBilling')
-            const jobs = await agenda.jobs({ "data.deploymentId": id });
-            if (jobs.length === 0) {
-                return { message: 'Job not found' };
-            }
+            const jobs = await agenda.jobs({ "data.usedBy.id": id });
             await jobs[0].remove();
-            await Billing.updateOne( { _id: job[0].attrs.data.billingId }, { status: "inactive"} )
+            await Billing.updateOne( { _id: jobs[0].attrs.data.billingId }, { isActive: false, endTime: moment().toISOString() } )
+            jobDefinitions.delete(jobs[0].attrs.data.billingId);
             return { message: 'Job canceled and deleted successfully' };
         } catch (err) {
-            console.error(`Error processing 'remove' job: ${err.message}`);
+            console.error(`Error processing 'stopBilling' job: ${err.message}`);
             throw err;
         }
     }
@@ -74,25 +66,26 @@ const processJob = async (job) => {
 const billingTrackerQueue = new Worker( 'billing-tracker', processJob, { connection: redisClient, concurrency: 3 });
 
 billingTrackerQueue.on('ready', () => {
-    console.log('billing-tracker is Ready!');
+    logger.success('billing-tracker is Ready!');
+    
 })
 
 billingTrackerQueue.on('active', (job) => {
-    console.info(` [Id: ${job.id}] | billing-tracker Started`);
+    logger.info(` [Id: ${job.id}] | billing Started`);
 });
   
 billingTrackerQueue.on('completed', async (job) => {
     await job.remove();
-    console.log(` [Id: ${job.id}] | billing-tracker Completed & Removed from Queue`);
+    logger.success(` [Id: ${job.id}] | billing Completed & Removed from Queue`);
 });
     
 billingTrackerQueue.on('failed',async (job, err) => {
-    console.error(` [Id: ${job.id}] | billing-tracker Failed! | ${err}`);
+    logger.warn(` [Id: ${job.id}] | billing Failed! | ${err}`);
     if (job.attemptsMade < job.opts.attempts) {
-        console.info(` [Id: ${job.id}] | billing-tracker will Retry after 30s`); 
+        logger.info(` [Id: ${job.id}] | billing will Retry after 30s`); 
     }else{
         await job.remove();
-        console.warn(`[Id: ${job.id}] | billing-tracker Max retry Reached | Removed from Queue`);
+        logger.error(`[Id: ${job.id}] | billing Max retry Reached | Removed from Queue`);
     } 
 });
 
