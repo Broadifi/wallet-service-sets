@@ -1,9 +1,11 @@
 const { ApiError, formatHours } = require("../helpers");
 const stripe = require('stripe')(process.env.STRIPE_SECRET);
 const { Billing } = require("../models/billing");
+const { payments } = require("../models/payments");
 const { Wallet } = require("../models/wallet");
 const mongoose = require('mongoose')
 class WalletController {
+
 
   async createCheckout( req, res, next ) {
     try {
@@ -37,7 +39,16 @@ class WalletController {
         }
       );
 
-      console.log(session)
+      // create payment document using stripe session
+      await payments.create({
+        amount: session.amount,
+        payment_status: session.payment_status,
+        status: session.status,
+        currency: session.currency,
+        createdBy: req.user.userId,
+        exipresAt: session.expires_at
+
+      })
 
       res.sendSuccessResponse({
         data: {
@@ -64,8 +75,11 @@ class WalletController {
         throw new Error(err)
       }
       const { type , data: { object: eventObj }} = event
-      console.log(eventObj)
       if(type === 'checkout.session.completed' && eventObj.payment_status === 'paid' && eventObj.status === 'complete'){
+        // update payment history document
+        await payments.updateOne({ createdBy: eventObj.client_reference_id }, { status: 'complete', exipresAt: eventObj.expires_at, payment_status: 'paid' })
+        
+        // update wallet document
         const isWalletExist = await Wallet.findOne( { createdBy: eventObj.client_reference_id  } )
         if( isWalletExist ) {
           const credit = Number(isWalletExist.credit) + ( eventObj.amount_total / 100 )

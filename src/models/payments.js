@@ -57,4 +57,4 @@ class Payments {
   }
 }
 
-module.exports = { payments: new Payments().getModel() };
+module.exports = { payments: new Payments().getModel(), updateExpiredDocuments: Payments.updateExpiredDocuments };

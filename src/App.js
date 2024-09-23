@@ -5,6 +5,7 @@ const { InstacesRoute } = require('./routes/instances');
 const { BillingRoutes } = require('./routes/billing');
 const cors = require('cors');
 const { WalletController } = require('./controllers/wallets');
+const { PaymentsRoutes } = require('./routes/payments');
 
 class App {
   /**
@@ -41,6 +42,7 @@ class App {
     app.use('/api/v1/wallet', WalletRoutes)
     app.use('/api/v1/instances', InstacesRoute)
     app.use('/api/v1/billings', BillingRoutes)
+    app.use('/api/v1/payments', PaymentsRoutes)
 
     app.use('/*', (req, res, next) => {
       const error = new ApiError('NOT_FOUND_ERROR');
