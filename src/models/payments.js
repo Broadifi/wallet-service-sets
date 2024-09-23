@@ -1,19 +1,26 @@
 const mongoose = require('mongoose');
 
-class Wallet {
+class Payments {
   schema = new mongoose.Schema({
+    _id: {
+      type: String
+    },
+    amount: {
+      type: Number
+    },
+    payment_status: {
+      type: String,
+      enum: ['paid', 'unpaid'],
+      default: 'unpaid'
+    },
     status: {
       type: String,
-      enum: ['active', 'inactive'],
-      default: 'active'
-    },
-    credit: {
-      type: String,
-      default: '0'
+      enum: ['open', 'complete'],
+      default: 'open'
     },
     currency: {
       type: String,
-      default: "USD"
+      default: 'usd'
     },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId, // Assuming users are stored as ObjectIds in MongoDB
@@ -22,17 +29,32 @@ class Wallet {
       type: Date,
       default: Date.now,
     },
-    updatedAt: {
-      type: Date,
-      default: Date.now,
+    expiresAt: {
+      type: Date
     }
   });
 
-
   getModel() {
-    // eslint-disable-next-line no-console
-    return mongoose.model('wallets', this.schema);
+    return mongoose.model('payments', this.schema);
+  }
+
+  async updateExpiredDocuments() {
+    const currentTime = Math.floor(Date.now() / 1000);
+    try {
+      const result = await (this.getModel()).updateMany(
+        {
+          expiresAt: { $lt: currentTime },
+          status: 'open',
+        },
+        {
+          $set: { status: 'complete' },
+        }
+      );
+      console.log(`${result.modifiedCount} documents updated.`);
+    } catch (err) {
+      console.error('Error updating expired documents:', err);
+    }
   }
 }
 
-module.exports = { Wallet: new Wallet().getModel() };
+module.exports = { payments: new Payments().getModel() };
