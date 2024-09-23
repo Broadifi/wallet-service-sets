@@ -11,9 +11,6 @@ class InstacesRoute {
   initializeRoutes() {
     this.router.get('/', instaceConfigController.getAll)
     this.router.get('/:id', instaceConfigController.get)
-
-
-    
   }
 
   getRouter() {

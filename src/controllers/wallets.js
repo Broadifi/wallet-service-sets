@@ -29,7 +29,7 @@ class WalletController {
               unit_amount: amount * 100,
               product_data: {
                 name: 'Credit',
-                images: ['https://img.freepik.com/free-vector/falling-dollar-coins-success-luck-money-investment-concept_1262-13463.jpg?t=st=1717755281~exp=1717758881~hmac=52d71e79ca0dc6cd78963802ca4ec45b0a61e69daca9dd9b549fb0d56b685e88&w=996']  
+                images: ['https://img.freepik.com/free-vector/e-wallet-concept-illustration_114360-7957.jpg?t=st=1727113595~exp=1727117195~hmac=ecd8a99b3d22456ebc9945c85255453ad5ede5956dcacc36664a4ff5197fdb6d&w=1060']  
               }     
   
             },
@@ -101,7 +101,7 @@ class WalletController {
       }
       const { status, credit, currency } = item
 
-      res.sendSuccessResponse({ status, credit, currency, currentSpending: costPerHour, timeleftInHour  } )
+      res.sendSuccessResponse({ status, credit, currency, currentSpending: costPerHour, timeleftInHour })
     } catch (e) {
       next(e)
     }
