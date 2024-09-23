@@ -21,18 +21,20 @@ class WalletController {
       next(e)
     }
   }
-/** TODO
- * add payment history
- */
+  /** TODO
+   * add payment history
+   */
   async webohook (req, res, next) {
     try {
-      // const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET
-      // console.log(endpointSecret)
-      // const sig = req.headers['stripe-signature'];
-      // console.log(req.headers)
-      // let event = construct(req.body, sig, endpointSecret)
-      // console.log(event)
-      const { type , data: { object: eventObj }} = req.body
+      const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET
+      const sig = req.headers['stripe-signature'];
+      let event;
+      try {
+        event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+      } catch (err) {
+        throw new Error(err)
+      }
+      const { type , data: { object: eventObj }} = event
 
       if(type === 'checkout.session.completed' && eventObj.payment_status === 'paid' && eventObj.status === 'complete'){
         const isWalletExist = await Wallet.findOne( { createdBy: eventObj.client_reference_id  } )

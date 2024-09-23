@@ -50,11 +50,4 @@ const defineHourlyBillingJob = async ( agendaJobName) => {
   });
 }
 
-
-
-
-
-
-
-
 module.exports = { agenda, defineHourlyBillingJob, jobDefinitions };
