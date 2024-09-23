@@ -37,6 +37,8 @@ class WalletController {
         }
       );
 
+      console.log(session)
+
       res.sendSuccessResponse({
         data: {
           stripeCheckoutId: session.id,
@@ -62,7 +64,7 @@ class WalletController {
         throw new Error(err)
       }
       const { type , data: { object: eventObj }} = event
-
+      console.log(eventObj)
       if(type === 'checkout.session.completed' && eventObj.payment_status === 'paid' && eventObj.status === 'complete'){
         const isWalletExist = await Wallet.findOne( { createdBy: eventObj.client_reference_id  } )
         if( isWalletExist ) {
@@ -107,4 +109,4 @@ class WalletController {
 
 }
 
-module.exports = {WalletController: new WalletController()}
+module.exports = { WalletController: new WalletController() }
