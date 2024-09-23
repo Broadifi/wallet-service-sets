@@ -8,7 +8,6 @@ class WalletController {
   async createCheckout( req, res, next ) {
     try {
       const { amount } = req.body
-      console.log(req.user)
       const userCollection = mongoose.connection.db.collection('users');
       const user = await userCollection.findOne({_id: new mongoose.mongo.ObjectId(req.user.userId) })
       if( !user ) {
