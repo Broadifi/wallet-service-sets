@@ -1,5 +1,5 @@
 const { ApiError, formatHours } = require("../helpers");
-const { createCheckoutSessions, construct } = require("../helpers/stripe");
+const stripe = require('stripe')(process.env.STRIPE_SECRET);
 const { Billing } = require("../models/billing");
 const { Wallet } = require("../models/wallet");
 const mongoose = require('mongoose')
@@ -14,8 +14,36 @@ class WalletController {
       if( !user ) {
         throw new ApiError('NOT_FOUND_ERROR', 'User not found')
       }
-      const checkout = await createCheckoutSessions(amount, req.user.userId, user.email )
-      res.sendSuccessResponse(checkout)
+
+      const session = await stripe.checkout.sessions.create(
+        {
+          payment_method_types: ['card'],
+          mode: 'payment',
+          success_url: process.env.STRIPE_SUCESS,
+          cancel_url: process.env.STRIPE_FAILED,
+          customer_email: user.email,
+          client_reference_id: req.user.userId,
+          line_items: [{
+            price_data: {
+              currency: 'USD',
+              unit_amount: amount * 100,
+              product_data: {
+                name: 'Credit',
+                images: ['https://img.freepik.com/free-vector/falling-dollar-coins-success-luck-money-investment-concept_1262-13463.jpg?t=st=1717755281~exp=1717758881~hmac=52d71e79ca0dc6cd78963802ca4ec45b0a61e69daca9dd9b549fb0d56b685e88&w=996']  
+              }     
+  
+            },
+            quantity: 1
+          }]
+        }
+      );
+
+      res.sendSuccessResponse({
+        data: {
+          stripeCheckoutId: session.id,
+          redirectUrl: session.url 
+        }
+      })
     } catch (e) {
       console.log(e)
       next(e)
