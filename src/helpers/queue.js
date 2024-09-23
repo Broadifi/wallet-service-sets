@@ -74,12 +74,17 @@ billingTrackerQueue.on('ready', () => {
 })
 
 billingTrackerQueue.on('active', (job) => {
-    logger.info(` [Id: ${job.id}] | billing Started`);
+    if( job.name === 'startBilling' ) {
+        logger.info(` [Id: ${job.id}] | billing Started`);
+    }
+
+    if( job.name === 'stopBilling' ) {
+        logger.info(` [Id: ${job.id}] | billing Stopped`);
+    }    
 });
   
 billingTrackerQueue.on('completed', async (job) => {
     await job.remove();
-    logger.success(` [Id: ${job.id}] | billing Completed & Removed from Queue`);
 });
     
 billingTrackerQueue.on('failed',async (job, err) => {
