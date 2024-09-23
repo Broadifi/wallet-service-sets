@@ -56,7 +56,6 @@ class WalletController {
     try {
       const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET
       const sig = req.headers['stripe-signature'];
-      console.log(endpointSecret, sig)
       let event;
       try {
         event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
