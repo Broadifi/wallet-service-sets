@@ -51,6 +51,9 @@ const processJob = async (job) => {
         try {
             const { id } = job
             const jobs = await agenda.jobs({ "data.usedBy.id": id });
+            if (!jobs[0]) {
+                return { message: 'No job found' }; // throw new Error('No job found');
+            }
             await jobs[0].remove();
             await Billing.updateOne( { _id: jobs[0].attrs.data.billingId }, { isActive: false, endTime: moment().toISOString() } )
             jobDefinitions.delete(jobs[0].attrs.data.billingId);
