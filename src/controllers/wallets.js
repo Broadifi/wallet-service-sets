@@ -52,10 +52,11 @@ class WalletController {
   /** TODO
    * add payment history
    */
-  async webohook (req, res, next) {
+  async webhook (req, res, next) {
     try {
       const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET
       const sig = req.headers['stripe-signature'];
+      console.log(endpointSecret, sig)
       let event;
       try {
         event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);

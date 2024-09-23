@@ -6,6 +6,7 @@ const { InstacesRoute } = require('./routes/instances');
 const { BillingRoutes } = require('./routes/billing');
 const { billingTrackerQueue } = require('./helpers/queue');
 const cors = require('cors');
+const { WalletController } = require('./controllers/wallets');
 
 /**
  * Node.js App Class
@@ -30,9 +31,9 @@ class App {
    */
   init() {
     const app = this.express();
-
-    app.use(bodyParser.json());
     app.use(cors({ origin: '*' }));
+    app.post('/api/v1/wallet/webhook', this.express.raw({type: 'application/json'}), WalletController.webhook)
+    app.use(this.express.json());
     app.use((req, res, next) => {
       res.sendSuccessResponse = SendSuccessResponse;
       next();
