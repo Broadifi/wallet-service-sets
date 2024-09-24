@@ -33,7 +33,7 @@ class PaymentsController {
             }
           );
           if(result.modifiedCount > 0) {
-            console.log(`${result.modifiedCount} documents updated.`);
+            console.log(`${result.modifiedCount} payments status updated.`);
           }
         } catch (err) {
           throw err;
