@@ -41,7 +41,8 @@ class WalletController {
 
       // create payment document using stripe session
       await payments.create({
-        amount: session.amount,
+        _id: session.id,
+        amount: session.amount / 100,
         payment_status: session.payment_status,
         status: session.status,
         currency: session.currency,
@@ -76,8 +77,17 @@ class WalletController {
       }
       const { type , data: { object: eventObj }} = event
       if(type === 'checkout.session.completed' && eventObj.payment_status === 'paid' && eventObj.status === 'complete'){
+
+        // get payment status
+        const payment = await payments.findOne({ _id: eventObj.id })
+        console.log(payment)
+        if(payment.status === 'complete') {
+          return {
+            message: 'Payment already completed'
+          }
+        }
         // update payment history document
-        await payments.updateOne({ createdBy: eventObj.client_reference_id }, { status: 'complete', exipresAt: eventObj.expires_at, payment_status: 'paid' })
+        await payments.updateOne({ createdBy: eventObj.client_reference_id }, { status: 'complete', payment_status: 'paid' })
         
         // update wallet document
         const isWalletExist = await Wallet.findOne( { createdBy: eventObj.client_reference_id  } )

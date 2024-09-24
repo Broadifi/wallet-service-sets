@@ -1,4 +1,4 @@
-const { payments, updateExpiredDocuments } = require('../models/payments');
+const { payments } = require('../models/payments');
 const cron = require('node-cron')
 class PaymentsController {
 

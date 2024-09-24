@@ -37,24 +37,6 @@ class Payments {
   getModel() {
     return mongoose.model('payments', this.schema);
   }
-
-  async updateExpiredDocuments() {
-    const currentTime = Math.floor(Date.now() / 1000);
-    try {
-      const result = await (this.getModel()).updateMany(
-        {
-          expiresAt: { $lt: currentTime },
-          status: 'open',
-        },
-        {
-          $set: { status: 'complete' },
-        }
-      );
-      console.log(`${result.modifiedCount} documents updated.`);
-    } catch (err) {
-      console.error('Error updating expired documents:', err);
-    }
-  }
 }
 
-module.exports = { payments: new Payments().getModel(), updateExpiredDocuments: Payments.updateExpiredDocuments };
+module.exports = { payments: new Payments().getModel() };
