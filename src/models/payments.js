@@ -6,7 +6,7 @@ class Payments {
       type: String
     },
     amount: {
-      type: Number
+      type: String
     },
     payment_status: {
       type: String,

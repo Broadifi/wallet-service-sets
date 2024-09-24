@@ -1,6 +1,7 @@
 const { SendSuccessResponse } = require('./response.success');
 const { ApiError } = require('./response.error');
 const moment = require('moment');
+const humanizeString = require('humanize-string');
 
 function formatMongooseError( errorsObj ) {
     const errors = {};

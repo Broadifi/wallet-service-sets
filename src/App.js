@@ -6,6 +6,7 @@ const { BillingRoutes } = require('./routes/billing');
 const cors = require('cors');
 const { WalletController } = require('./controllers/wallets');
 const { PaymentsRoutes } = require('./routes/payments');
+const humanizeString = require('humanize-string');
 
 class App {
   /**
