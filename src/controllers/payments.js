@@ -4,7 +4,6 @@ class PaymentsController {
 
     constructor() {
         cron.schedule('* * * * *', async () => {
-            console.log('Checking for expired documents...');
             try {
                 await this.updateExpiredDocuments();
             } catch (error) {
@@ -33,9 +32,11 @@ class PaymentsController {
               $set: { status: 'complete' },
             }
           );
-          console.log(`${result.modifiedCount} documents updated.`);
+          if(result.modifiedCount > 0) {
+            console.log(`${result.modifiedCount} documents updated.`);
+          }
         } catch (err) {
-          console.error('Error updating expired documents:', err);
+          throw err;
         }
       }
 }

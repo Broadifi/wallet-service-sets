@@ -77,7 +77,6 @@ class WalletController {
 
         // get payment status
         const payment = await payments.findOne({ _id: eventObj.id })
-        console.log(payment)
         if(payment.status === 'complete') {
           return {
             message: 'Payment already completed'
