@@ -38,17 +38,16 @@ class WalletController {
           }]
         }
       );
-
+      console.log(session)
       // create payment document using stripe session
       await payments.create({
         _id: session.id,
-        amount: session.amount / 100,
+        amount,
         payment_status: session.payment_status,
         status: session.status,
         currency: session.currency,
         createdBy: req.user.userId,
         exipresAt: session.expires_at
-
       })
 
       res.sendSuccessResponse({
