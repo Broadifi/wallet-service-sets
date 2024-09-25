@@ -43,7 +43,29 @@ function formatHours(hoursDecimal) {
   }
 }
 
+function createStripeCheckoutObj( user, amount ){
+  return {
+    payment_method_types: ['card'],
+    mode: 'payment',
+    success_url: process.env.STRIPE_SUCESS,
+    cancel_url: process.env.STRIPE_FAILED,
+    customer_email: user.email,
+    client_reference_id: user._id,
+    line_items: [{
+      price_data: {
+        currency: 'USD',
+        unit_amount: amount * 100,
+        product_data: {
+          name: 'Credit',
+          images: ['https://img.freepik.com/free-vector/e-wallet-concept-illustration_114360-7957.jpg?t=st=1727113595~exp=1727117195~hmac=ecd8a99b3d22456ebc9945c85255453ad5ede5956dcacc36664a4ff5197fdb6d&w=1060']
+        }
+      },
+      quantity: 1
+    }]
+  }
+}
+
 const float = (value) => parseFloat(value);
 
-module.exports = { SendSuccessResponse, ApiError, formatMongooseError, formatHours, float };
+module.exports = { SendSuccessResponse, ApiError, formatMongooseError, formatHours, float, createStripeCheckoutObj };
 

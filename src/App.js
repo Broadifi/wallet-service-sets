@@ -4,7 +4,7 @@ const { WalletRoutes } = require('./routes/wallet');
 const { InstacesRoute } = require('./routes/instances');
 const { BillingRoutes } = require('./routes/billing');
 const cors = require('cors');
-const { WalletController } = require('./controllers/wallets');
+const { paymentsController } = require('./controllers/payments');
 const { PaymentsRoutes } = require('./routes/payments');
 const humanizeString = require('humanize-string');
 
@@ -30,13 +30,13 @@ class App {
       res.sendSuccessResponse = SendSuccessResponse;
       next();
     });
-    app.post('/api/v1/wallet/webhook', this.express.raw({type: 'application/json'}), WalletController.webhook)
+    app.post('/api/v1/wallet/webhook', this.express.raw({ type: 'application/json' }), paymentsController.webhook)
     app.use(this.express.json());
     app.get('/', (req, res) => {
       res.sendSuccessResponse({
         status: 200,
         success: true,
-        message: 'Welcome to Billing Tracker API',
+        message: 'Billing Tracker API',
       });
     });
 

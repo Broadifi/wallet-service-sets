@@ -1,4 +1,4 @@
-const { PaymentsController } = require("../controllers/payments");
+const { paymentsController } = require("../controllers/payments");
 const { checkLogin } = require("../middleware/Auth");
 const express = require("express");
 
@@ -10,7 +10,7 @@ class PaymentsRoutes {
     }
 
     initializeRoutes() {
-        this.router.get('/', checkLogin, PaymentsController.getAll)
+        this.router.get('/', checkLogin, paymentsController.getAll)
     }
 
     getRouter() {
