@@ -7,8 +7,8 @@ const EventEmitter = require('events');
 
 class PaymentsController {
 
+  events = new EventEmitter();
   constructor() {
-    this.events = new EventEmitter();
     cron.schedule('* * * * *', async () => {
       try {
         await this.updateExpiredDocuments();
