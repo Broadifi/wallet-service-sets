@@ -61,8 +61,9 @@ class PaymentsController {
         // update payment history document
         await payments.updateOne({ _id: event.id }, { status: 'complete', payment_status: 'paid' });
         const { client_reference_id, amount_total } = event;
-        console.log(client_reference_id, amount_total)
+        console.log(client_reference_id, amount_total / 100)
         // update wallet document
+        console.log(this.events)
         this.events.emit('payment', client_reference_id, amount_total / 100);
         res.sendSuccessResponse({ message: 'Payment completed' });
       }
