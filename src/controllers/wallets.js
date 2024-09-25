@@ -6,8 +6,7 @@ class WalletController {
 
   constructor() {
     paymentsController.events.on('payment', async (userId, amount) => {
-      const r = await this.updateWalletCredit(userId, amount);
-      console.log(r)
+      await this.updateWalletCredit(userId, amount);
     })
   }
 

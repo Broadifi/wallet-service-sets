@@ -8,6 +8,9 @@ class Payments {
     amount: {
       type: String
     },
+    url: {
+      type: String
+    },
     payment_status: {
       type: String,
       enum: ['paid', 'unpaid'],
@@ -15,7 +18,7 @@ class Payments {
     },
     status: {
       type: String,
-      enum: ['open', 'complete'],
+      enum: ['open', 'complete', 'expired'],
       default: 'open'
     },
     currency: {
@@ -28,10 +31,6 @@ class Payments {
     createdAt: {
       type: Date,
       default: Date.now,
-    },
-    expires_at: {
-      type: Number,
-      default: 0.0
     }
   });
 

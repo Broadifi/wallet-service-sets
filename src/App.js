@@ -30,7 +30,7 @@ class App {
       res.sendSuccessResponse = SendSuccessResponse;
       next();
     });
-    app.post('/api/v1/wallet/webhook', this.express.raw({ type: 'application/json' }), paymentsController.webhook)
+    app.post('/api/v1/payments/webhook', this.express.raw({ type: 'application/json' }), paymentsController.webhook)
     app.use(this.express.json());
     app.get('/', (req, res) => {
       res.sendSuccessResponse({

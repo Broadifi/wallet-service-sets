@@ -1,6 +1,5 @@
 const { payments } = require('../models/payments');
 const { ApiError, createStripeCheckoutObj } = require("../helpers");
-const cron = require('node-cron');
 const mongoose = require('mongoose');
 const stripe = require('stripe')(process.env.STRIPE_SECRET);
 const EventEmitter = require('events');
@@ -10,13 +9,6 @@ class PaymentsController {
   constructor() {
     this.events = new EventEmitter();
     this.webhook = this.webhook.bind(this);
-    cron.schedule('* * * * *', async () => {
-      try {
-        await this.updateExpiredDocuments();
-      } catch (error) {
-        console.error('Error updating status of expired payment ckeckouts:', error);
-      }
-    });
   }
   async getAll(req, res, next) {
     try {
@@ -43,8 +35,8 @@ class PaymentsController {
       if (!user) throw new ApiError('NOT_FOUND_ERROR', 'User not found');
 
       const checkoutObj = createStripeCheckoutObj(user, amount);
-      const { id: _id, payment_status, status, currency, expires_at, url } = await stripe.checkout.sessions.create(checkoutObj);
-      await payments.create({ _id, amount, payment_status, status, currency, createdBy: user._id, expires_at });
+      const { id: _id, payment_status, status, currency, url } = await stripe.checkout.sessions.create(checkoutObj);
+      await payments.create({ _id, amount, payment_status, status, currency, createdBy: user._id, url });
 
       res.sendSuccessResponse({ data: { stripeCheckoutId: _id, redirectUrl: url }})
     } catch (e) {
@@ -55,38 +47,24 @@ class PaymentsController {
   async webhook(req, res, next) {
     try {
       const { type, data: { object: event } } = stripe.webhooks.constructEvent(req.body, req.headers['stripe-signature'], process.env.STRIPE_WEBHOOK_SECRET);
-      if (type === 'checkout.session.completed') {
-        const payment = await payments.findOne({ _id: event.id });
-        if (payment.status === 'complete') throw new ApiError('VALIDATION_ERROR', 'Payment already completed');
-        
-        // update payment history document
-        await payments.updateOne({ _id: event.id }, { status: 'complete', payment_status: 'paid' });
-        const { client_reference_id, amount_total } = event;
+      const payment = await payments.findOne({ _id: event.id });
 
+      if (type === 'checkout.session.completed') {
+        if (payment.status === 'complete') throw new ApiError('VALIDATION_ERROR', 'Payment already completed');
+
+        await payments.updateOne({ _id: event.id }, { status: 'complete', payment_status: 'paid' });
+        
         // update wallet document
+        const { client_reference_id, amount_total } = event;
         this.events.emit('payment', client_reference_id, amount_total / 100);
-        res.sendSuccessResponse({ message: 'Payment completed' });
+        return res.sendSuccessResponse({ message: 'Payment completed' });
+
+      }else if (type === 'checkout.session.expired') {
+        await payments.updateOne({ _id: event.id }, { status: 'expired' });
+        return res.sendSuccessResponse({ message: 'Payment expired' });
       }
     } catch (e) {
       next(e)
-    }
-  }
-
-  async updateExpiredDocuments() {
-    const currentTime = Math.floor(Date.now() / 1000);
-    try {
-      const result = await payments.updateMany(
-        {
-          expires_at: { $lt: currentTime },
-          status: 'open',
-        },
-        {
-          $set: { status: 'complete' },
-        }
-      );
-      if (result.modifiedCount > 0) console.log(`${result.modifiedCount} expired payment checkout's status updated.`);
-    } catch (err) {
-      throw err;
     }
   }
 }
