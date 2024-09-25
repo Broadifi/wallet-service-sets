@@ -50,7 +50,7 @@ function createStripeCheckoutObj( user, amount ){
     success_url: process.env.STRIPE_SUCESS,
     cancel_url: process.env.STRIPE_FAILED,
     customer_email: user.email,
-    client_reference_id: user._id,
+    client_reference_id: String(user._id),
     line_items: [{
       price_data: {
         currency: 'USD',
