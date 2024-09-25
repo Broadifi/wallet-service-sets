@@ -13,7 +13,13 @@ class WalletController {
 
 
   async updateWalletCredit(userId, amount) {
-    return (await Wallet.updateOne({ createdBy: userId }, { $inc: { credit: Number(amount) } }, { upsert: true, new: true }));
+    try {
+      const wallet = await Wallet.findOne({ createdBy: userId });
+      if (!wallet) throw new Error('Wallet not found for the user');
+      return (await Wallet.updateOne({ createdBy: userId }, { credit: (wallet.credit + amount).toString() }, { upsert: true, new: true }));
+    } catch (e) {
+      console.log(e)
+    }
   }
 
   async getWallet(req, res, next) {
