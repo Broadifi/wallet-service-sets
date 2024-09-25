@@ -44,7 +44,6 @@ class PaymentsController {
 
       const checkoutObj = createStripeCheckoutObj(user, amount);
       const { id: _id, payment_status, status, currency, expires_at, url } = await stripe.checkout.sessions.create(checkoutObj);
-      console.log({ _id, payment_status, status, currency, expires_at, url });
       await payments.create({ _id, amount, payment_status, status, currency, createdBy: user._id, expires_at });
 
       res.sendSuccessResponse({ data: { stripeCheckoutId: _id, redirectUrl: url }})
@@ -59,12 +58,12 @@ class PaymentsController {
       if (type === 'checkout.session.completed') {
         const payment = await payments.findOne({ _id: event.id });
         if (payment.status === 'complete') throw new ApiError('VALIDATION_ERROR', 'Payment already completed');
+        
         // update payment history document
         await payments.updateOne({ _id: event.id }, { status: 'complete', payment_status: 'paid' });
         const { client_reference_id, amount_total } = event;
-        console.log(client_reference_id, amount_total / 100)
+
         // update wallet document
-        console.log(this.events)
         this.events.emit('payment', client_reference_id, amount_total / 100);
         res.sendSuccessResponse({ message: 'Payment completed' });
       }

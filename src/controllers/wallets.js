@@ -13,7 +13,7 @@ class WalletController {
 
 
   async updateWalletCredit(userId, amount) {
-    return (await Wallet.updateOne({ createdBy: userId }, { $inc: { credit: amount } }, { upsert: true, new: true }));
+    return (await Wallet.updateOne({ createdBy: userId }, { $inc: { credit: Number(amount) } }, { upsert: true, new: true }));
   }
 
   async getWallet(req, res, next) {
