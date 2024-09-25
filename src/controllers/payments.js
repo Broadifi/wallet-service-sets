@@ -43,6 +43,7 @@ class PaymentsController {
 
       const checkoutObj = createStripeCheckoutObj(user, amount);
       const { id: _id, payment_status, status, currency, expires_at, url } = await stripe.checkout.sessions.create(checkoutObj);
+      console.log({ _id, payment_status, status, currency, expires_at, url });
       await payments.create({ _id, amount, payment_status, status, currency, createdBy: user._id, expires_at });
 
       res.sendSuccessResponse({ data: { stripeCheckoutId: _id, redirectUrl: url }})
