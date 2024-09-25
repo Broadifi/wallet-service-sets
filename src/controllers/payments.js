@@ -35,7 +35,6 @@ class PaymentsController {
   async createCheckout(req, res, next) {
     try {
       const { amount } = req.body;
-      console.log(amount);
       if (isNaN(amount)) throw new ApiError('VALIDATION_ERROR', 'Amount must be a valid number');
 
       const userCollection = mongoose.connection.db.collection('users');
@@ -43,11 +42,10 @@ class PaymentsController {
       if (!user) throw new ApiError('NOT_FOUND_ERROR', 'User not found');
 
       const checkoutObj = createStripeCheckoutObj(user, amount);
-      console.log(checkoutObj);
-      const { id: _id, payment_status, status, currency, expires_at } = await stripe.checkout.sessions.create(checkoutObj);
+      const { id: _id, payment_status, status, currency, expires_at, url } = await stripe.checkout.sessions.create(checkoutObj);
       await payments.create({ _id, amount, payment_status, status, currency, createdBy: user._id, expires_at });
 
-      res.sendSuccessResponse({ data: { stripeCheckoutId: session.id, redirectUrl: session.url }})
+      res.sendSuccessResponse({ data: { stripeCheckoutId: _id, redirectUrl: url }})
     } catch (e) {
       next(e)
     }
