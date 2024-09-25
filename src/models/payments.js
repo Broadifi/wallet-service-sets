@@ -30,7 +30,8 @@ class Payments {
       default: Date.now,
     },
     expires_at: {
-      type: Number
+      type: Number,
+      default: 0.0
     }
   });
 
