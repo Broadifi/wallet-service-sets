@@ -63,6 +63,7 @@ class PaymentsController {
         await payments.updateOne({ _id: event.id }, { status: 'expired' });
         return res.sendSuccessResponse({ message: 'Payment expired' });
       }
+      throw new ApiError('UNKNOWN_ERROR', 'Payment not found');
     } catch (e) {
       next(e)
     }
