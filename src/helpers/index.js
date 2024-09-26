@@ -28,13 +28,12 @@ function formatHours(hours) {
   if (hours >= 24) {
     const days = Math.floor(hours / 24);
     const remainingHours = Math.ceil(hours % 24);
-    const daysPart = days > 0 ? `${days} day${days !== 1 ? 's' : ''}` : null;
-    const remainingHoursPart = remainingHours > 0 ? `${remainingHours} hour${remainingHours !== 1 ? 's' : ''}` : null;
-    return `${daysPart} ${remainingHoursPart ? remainingHoursPart : '' }`;
+    return `${days} day${days !== 1 ? 's' : ''}${remainingHours ? ` and ${remainingHours} hour${remainingHours !== 1 ? 's' : ''}` : ''}`;
   } else {
-    return `${Math.ceil(hours)} hour(s)`;
+    return `${Math.ceil(hours)} hour${Math.ceil(hours) !== 1 ? 's' : ''}`;
   }
 }
+
 
 function createStripeCheckoutObj( user, amount ){
   return {
