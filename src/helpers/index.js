@@ -24,32 +24,15 @@ function formatMongooseError( errorsObj ) {
     return errors;
 };
 
-function formatHours(hoursDecimal) {
-  const duration = moment.duration(hoursDecimal, 'hours');
-  const hours = Math.floor(duration.asHours());
-  const minutes = duration.minutes();
-
-  const hoursPart = hours > 0 ? `${hours} hour${hours !== 1 ? 's' : ''}` : '';
-  const minutesPart = minutes > 0 ? `${minutes} minute${minutes !== 1 ? 's' : ''}` : '';
-
-  // if (hoursPart && minutesPart) {
-  //   return `${hoursPart} ${minutesPart}`;
-  // } else if (hoursPart) {
-  //   return hoursPart;
-  // } else if (minutesPart) {
-  //   return minutesPart;
-  // } else {
-  //   return '0 minutes';
-  // }
-
-  if (hoursPart && minutesPart) {
-    return `${hoursPart} (+)`;
-  } else if (hoursPart) {
-    return hoursPart;
-  } else if (minutesPart) {
-    return '1 hour';
-  }else {
-    return 'N/A';
+function formatHours(hours) {
+  if (hours >= 24) {
+    const days = Math.floor(hours / 24);
+    const remainingHours = hours % 24;
+    const daysPart = days > 0 ? `${days} day${days !== 1 ? 's' : ''}` : null;
+    const remainingHoursPart = remainingHours > 0 ? `${remainingHours} hour${remainingHours !== 1 ? 's' : ''}` : null;
+    return `${daysPart} ${remainingHoursPart ? remainingHoursPart : '' }`;
+  } else {
+    return `${hours} hour(s)`;
   }
 }
 
