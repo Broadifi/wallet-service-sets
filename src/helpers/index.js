@@ -27,12 +27,12 @@ function formatMongooseError( errorsObj ) {
 function formatHours(hours) {
   if (hours >= 24) {
     const days = Math.floor(hours / 24);
-    const remainingHours = hours % 24;
+    const remainingHours = Math.ceil(hours % 24);
     const daysPart = days > 0 ? `${days} day${days !== 1 ? 's' : ''}` : null;
     const remainingHoursPart = remainingHours > 0 ? `${remainingHours} hour${remainingHours !== 1 ? 's' : ''}` : null;
     return `${daysPart} ${remainingHoursPart ? remainingHoursPart : '' }`;
   } else {
-    return `${hours} hour(s)`;
+    return `${Math.ceil(hours)} hour(s)`;
   }
 }
 
