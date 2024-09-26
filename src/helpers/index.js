@@ -46,7 +46,9 @@ function formatHours(hoursDecimal) {
     return `${hoursPart} (+)`;
   } else if (hoursPart) {
     return hoursPart;
-  } else {
+  } else if (minutesPart) {
+    return '1 hour';
+  }else {
     return 'N/A';
   }
 }
