@@ -15,7 +15,7 @@ class PaymentsController {
       const page = Math.ceil(req.query.page) || 1
       const limit = Math.ceil(req.query.limit) || 10
       const skip = (page - 1) * limit;
-      const items = await payments.find({ createdBy: req.user.userId }).skip(skip).limit(limit).lean()
+      const items = await payments.find({ createdBy: req.user.userId }, { __v: 0 }).sort({ createdAt: -1 }).skip(skip).limit(limit).lean()
       const totalCount = await payments.countDocuments({ createdBy: req.user.userId })
       const totalPages = Math.ceil(totalCount / limit);
       const hasNext = page < totalPages;
@@ -52,16 +52,16 @@ class PaymentsController {
       if (type === 'checkout.session.completed') {
         if (payment.status === 'complete') throw new ApiError('VALIDATION_ERROR', 'Payment already completed');
 
-        await payments.updateOne({ _id: event.id }, { status: 'complete', payment_status: 'paid' });
+        await payments.updateOne({ _id: event.id }, { status: 'complete', payment_status: 'paid', url: '' });
         
-        // update wallet document
+        // update wallet
         const { client_reference_id, amount_total } = event;
         this.events.emit('payment', client_reference_id, amount_total / 100);
-        return res.sendSuccessResponse({ message: 'Payment completed' });
 
+        return res.sendSuccessResponse({ message: 'Payment completed' });
       }else if (type === 'checkout.session.expired') {
-        await payments.updateOne({ _id: event.id }, { status: 'expired' });
-        return res.sendSuccessResponse({ message: 'Payment expired' });
+        await payments.updateOne({ _id: event.id }, { status: 'expired', url: '' });
+        return res.sendSuccessResponse({ message: 'Payment link expired' });
       }
       throw new ApiError('UNKNOWN_ERROR', 'Payment not found');
     } catch (e) {

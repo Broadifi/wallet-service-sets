@@ -24,7 +24,7 @@ class WalletController {
 
   async getWallet(req, res, next) {
     try {
-      let item = await Wallet.findOne({ createdBy: req.user.userId }, { status: 1, credit: 1, _id: 0, currency: 1 }).lean()
+      let item = await Wallet.findOne({ createdBy: req.user.userId }, { _id: 0 }).lean()
       if (!item) {
         item = (await Wallet.create({ createdBy: req.user.userId })).toJSON()
       }
