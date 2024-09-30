@@ -15,17 +15,20 @@ const defineHourlyBillingJob = async ( agendaJobName) => {
     try {
       const { billingId } = job.attrs.data;
       const billing = await Billing.findById(billingId);
-      if (!billing) {
-        throw new Error('Billing record not found');
-      }
-  
       const wallet = await Wallet.findOne({ createdBy: billing.userId });
-      if (!wallet) {
-        throw new Error('Wallet not found for the user');
-      }
-  
+      if (!billing || !wallet) throw new Error('Bill or wallet not found');
+      
       if (float(wallet.credit) >= float(billing.hourlyRate)) {
         wallet.credit = float(wallet.credit) - float(billing.hourlyRate);
+        wallet.totalSpend = float(wallet.totalSpend) + float(billing.hourlyRate);
+        const lastRunAt = job.attrs.lastRunAt
+        console.log(lastRunAt);
+        const isNewMonth = !moment(job.attrs.lastRunAt).isSame(moment(), 'month');
+        if(isNewMonth) {
+          wallet.lastMonthSpend = wallet.currentMonthSpend
+          wallet.currentMonthSpend = '0';
+        }
+        wallet.currentMonthSpend = float(wallet.currentMonthSpend) + float(billing.hourlyRate);
         await wallet.save();
 
         billing.totalCost = float(billing.totalCost) + float(billing.hourlyRate);

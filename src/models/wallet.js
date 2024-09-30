@@ -18,6 +18,18 @@ class Wallet {
     createdBy: {
       type: mongoose.Schema.Types.ObjectId, // Assuming users are stored as ObjectIds in MongoDB
     },
+    totalSpend: {
+      type: String,
+      default: '0'
+    },
+    currentMonthSpend: {
+      type: String,
+      default: '0'
+    },
+    lastMonthSpend: {
+      type: String,
+      default: '0'
+    },
     createdAt: {
       type: Date,
       default: Date.now,

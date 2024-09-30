@@ -1,6 +1,5 @@
 const { SendSuccessResponse } = require('./response.success');
 const { ApiError } = require('./response.error');
-const moment = require('moment');
 const humanizeString = require('humanize-string');
 
 function formatMongooseError( errorsObj ) {
@@ -28,7 +27,7 @@ function formatHours(hours) {
   if (hours >= 24) {
     const days = Math.floor(hours / 24);
     const remainingHours = Math.ceil(hours % 24);
-    return `${days} day${days !== 1 ? 's' : ''}${remainingHours ? ` and ${remainingHours} hour${remainingHours !== 1 ? 's' : ''}` : ''}`;
+    return `${days} day${days !== 1 ? 's' : ''}${remainingHours ? `${remainingHours} hour${remainingHours !== 1 ? 's' : ''}` : ''}`;
   } else {
     return `${Math.ceil(hours)} hour${Math.ceil(hours) !== 1 ? 's' : ''}`;
   }

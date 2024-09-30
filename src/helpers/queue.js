@@ -11,10 +11,9 @@ const logger = require("./logger");
 
 
 const processJob = async (job) => {
-    if (job.name === 'startBilling') {
+    const { id, name, data: { type } } = job;
+    if (name === 'startBilling') {
         try {
-            const { type } = job.data;
-            const { id } = job
             const collection = mongoose.connection.db.collection(type)
             const document = await collection.findOne({_id: new mongoose.mongo.ObjectId(id) })
             const instanceDetails = await instanceConfig.findOne({ _id: document.instanceType })
@@ -39,17 +38,25 @@ const processJob = async (job) => {
                 });
                 await billing.save();
             }
-            await defineHourlyBillingJob(`${billing._id.toString()}`);
-            const jobDetails = await agenda.every('1 hour', `${billing._id.toString()}`, { billingId: billing._id.toString(),  usedBy: { id: id, type: type, name: (document.name).includes('/') ? (document.name).split('/')[1] : document.name }  });
+            const billingId = billing._id.toString();
+            const documentName = document.name.includes('/') ? document.name.split('/')[1] : document.name;
+            await defineHourlyBillingJob(billingId);
+            const jobDetails = await agenda.every('1 hour', billingId, { 
+                billingId, 
+                usedBy: { 
+                    id, 
+                    type, 
+                    name: documentName 
+                } 
+            });
             return jobDetails
         } catch (error) {
             console.error(`Error processing 'startBilling' job: ${error.message}`);
             throw error;
         }
 
-    } else if (job.name === 'stopBilling') {
+    } else if (name === 'stopBilling') {
         try {
-            const { id } = job
             const jobs = await agenda.jobs({ "data.usedBy.id": id });
             if (!jobs[0]) {
                 return { message: 'No job found' }; // throw new Error('No job found');

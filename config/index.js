@@ -11,8 +11,8 @@ module.exports = {
     password: "AVNS_lUCKicURFU9Zz9y1Mg3",
     tls: {},
     retryStrategy: (times) => {
-        const delay = Math.min(times * 50, 2000);
-        return delay;
+      const delay = Math.min(times * 50, 2000);
+      return delay;
     },
     maxRetriesPerRequest: null,
   }
