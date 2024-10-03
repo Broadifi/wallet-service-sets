@@ -1,48 +1,77 @@
 const Redis = require('ioredis');
 
-class PubSubClient{
-    client = new Redis();
-    constructor(channel) {
-        this.channel = channel;
+class PubSubClient {
+    /**
+     * Constructs a PubSub client.
+     * @param {Object} redisConfig - The config object for Redis clients.
+     * @throws {Error} If there is an error when connecting to Redis.
+     */
+    constructor(redisConfig) {
+        this.pubClient = new Redis(redisConfig);
+        this.subClient = new Redis(redisConfig);
+        this.pubClient.on('error', (err) => {
+            throw err
+        });
+        this.events = new Set(); // stores unique events
+        setInterval(this.checkUnacknowledgedMessages, 5000); // Retry unacknowledged messages every 10 seconds
+    };
+
+    /**
+     * Publishes a message to a specified event. The message is stored in a
+     * Redis List and published to all subscribers of the event.
+     * @param {string} event - The name of the event to publish to
+     * @param {object|string} message - The message to publish
+     */
+    async emit(event, message) { 
+        const messageData = JSON.stringify({ id: Date.now(), message });
+        this.pubClient.publish(event, messageData);
+        await this.pubClient.lpush(event, messageData);
+        this.events.add(event);
     }
 
-    publish = async (channel, message) => {
-        const messageData = JSON.stringify({ id: Date.now(), message });
-        // Publish the message on Pub/Sub
-        this.client.publish(channel, messageData);
-        // Store the message in a Redis List (queue) for retry purposes
-        await this.client.lpush('message_storage', messageData); // Add message to the head of the queue
-    };
-    
-    subscribe = async (channel) => {
-        const pubSubClient = new Redis();
-        // Subscribe to the Redis Pub/Sub channel
-        pubSubClient.subscribe(channel, (err) => {
+    /**
+     * Subscribes to an event and listens for messages on the specified
+     * channel. When a message is received, it is acknowledged and removed
+     * from the Redis List, and the callback is called with the message.
+     * @param {string} event - The name of the event to subscribe to
+     * @param {function} callback - The callback to call when a message is received
+     */
+    async on(event, callback) {
+        this.subClient.subscribe(event, (err) => {
             if (err) {
-                console.error('Failed to subscribe:', err);
-            } else {
-                console.log(`Subscribed to channel: ${channel}`);
+                throw new Error('Failed to subscribe:', err);
             }
         });
-        pubSubClient.on('message', async (channel, messageData) => {
+        this.events.add(event);
+        this.subClient.on('message', async (event, messageData) => {
             const { id, message } = JSON.parse(messageData);
-            console.log(`Received message: ${message}`);
-            // Acknowledge the message without worrying about the order
-            await acknowledgeMessage(id);
+            await this.acknowledgeMessage(event, id);   // Acknowledge the message
+            callback(message);
         });
-    };
+    }
+
     // Acknowledge and remove the message from Redis List based on ID
-    const acknowledgeMessage = async (messageID) => {
-        const messageInQueue = await redis.lrange('message_queue', 0, -1); // Get all messages from the queue
+    async acknowledgeMessage(event, messageID) {
+        const messageInQueue = await this.pubClient.lrange(event, 0, -1);
         for (let i = 0; i < messageInQueue.length; i++) {
             const { id } = JSON.parse(messageInQueue[i]);
             if (id === messageID) {
-                // Remove the message regardless of order
-                await redis.lrem('message_queue', 1, messageInQueue[i]);
-                console.log(`Message ${messageID} acknowledged and removed`);
-                break;
+                await this.pubClient.lrem(event, 1, messageInQueue[i]); // Remove the message
             }
         }
     };
 
+    // Check unacknowledged messages and retry publishing them
+    checkUnacknowledgedMessages = async () => {
+        for (const event of this.events) {
+            const messageInQueue = await this.pubClient.lrange(event, 0, -1);  // get list of messages
+            if (messageInQueue.length > 0) {
+                for (const message of messageInQueue) {
+                    this.pubClient.publish(event, message);  // Republish the message
+                }
+            }
+        }
+    };
 }
+
+module.exports = { PubSubClient };
