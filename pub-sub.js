@@ -43,10 +43,12 @@ class PubSubClient {
             }
         });
         this.events.add(event);
-        this.subClient.on('message', async (event, messageData) => {
-            const { id, message } = JSON.parse(messageData);
-            await this.acknowledgeMessage(event, id);   // Acknowledge the message
-            callback(message);
+        this.subClient.on('message', async (channel, messageData) => {
+            if(channel === event){
+                const { id, message } = JSON.parse(messageData);
+                await this.acknowledgeMessage(channel, id);   // Acknowledge the message
+                callback(message);
+            }
         });
     }
 
