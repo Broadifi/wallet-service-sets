@@ -1,9 +1,9 @@
-const { PubSubClient } = require("./pub-sub");
+const { PubSubPlus } = require("./pub-sub");
 const { redisConf } = require('./config');
 
-const client = new PubSubClient(redisConf)
+const client = new PubSubPlus(redisConf)
 
-client.on('startBill', (m) => {
+client.on('startBill:deployment', (m) => {
     console.log(m) 
 });
 

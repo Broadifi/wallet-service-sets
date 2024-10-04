@@ -1,6 +1,6 @@
 const Redis = require('ioredis');
 
-class PubSubClient {
+class PubSubPlus {
     /**
      * Constructs a PubSub client.
      * @param {Object} redisConfig - The config object for Redis clients.
@@ -13,7 +13,7 @@ class PubSubClient {
             throw err
         });
         this.events = new Set(); // stores unique events
-        setInterval(this.checkUnacknowledgedMessages, 5000); // Retry unacknowledged messages every 10 seconds
+        setInterval(this.checkUnacknowledgedMessages, 5000); // Retry unacknowledged messages every 5 seconds
     };
 
     /**
@@ -47,7 +47,7 @@ class PubSubClient {
             if(channel === event){
                 const { id, message } = JSON.parse(messageData);
                 await this.acknowledgeMessage(channel, id);   // Acknowledge the message
-                callback(message);
+                await callback(message);
             }
         });
     }
@@ -76,4 +76,4 @@ class PubSubClient {
     };
 }
 
-module.exports = { PubSubClient };
+module.exports = { PubSubPlus };
