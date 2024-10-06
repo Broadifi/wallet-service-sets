@@ -1,12 +1,14 @@
 const { PubSubPlus } = require("./pub-sub");
+const { PubPlus, SubPlus } = require("./test");
 const { redisConf } = require('./config');
 
-const client = new PubSubPlus(redisConf)
-// client.emit('startBill', { message: 'hello' });
 
-for (let i = 0; i < 10; i++) {
-    client.emit('startBill:deployment', { message: 'startBill' + i });
+// const client = new PubSubPlus(redisConf)
+const client = new PubPlus(redisConf)
+
+for (let i = 0; i < 1; i++) {
+    client.emit('startBill', { message: ['startBill-' + i] });
     // client.emit('stopBill', { message: 'stopBill' + i });
 }
 
-console.log('emitted 10 messages')
+console.log('emitted')

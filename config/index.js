@@ -14,6 +14,14 @@ module.exports = {
       const delay = Math.min(times * 50, 2000);
       return delay;
     },
+    reconnectOnError(err) {
+      const targetErrors = ['READONLY', 'ETIMEDOUT'];
+      if (targetErrors.includes(err.message)) {
+        return true;  // Reconnect on specific error types
+      }
+      return false;
+    },
     maxRetriesPerRequest: null,
+    enableReadyCheck: true,
   }
 };
