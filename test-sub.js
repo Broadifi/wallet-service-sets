@@ -10,9 +10,9 @@ client.on('startBill', (m, ack) => {
     // ack(); 
 });
 
-// client.on('error', (m) => {
-//     console.log(m);
-// });
+client.on('error', (err) => {
+    console.log(err);
+});
 
 // client.on('stopBill', (m, ack) => {
 //     console.log(m) 

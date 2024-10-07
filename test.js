@@ -2,18 +2,21 @@ const Redis = require('ioredis');
 const { v4: uuidv4 } = require('uuid');
 const EventEmitter = require('events');
 
-class PubPlus {
+class PubPlus extends EventEmitter {
 
     /**
      * Constructs a PubSub client.
      * @param {Object} redisConfig - The config object for Redis clients.
      */
     constructor(redisConfig) {
+        super();
         this.pubClient = new Redis(redisConfig);
+        this.pubClient.on('error', (err) => this.errorHandler(err));
         this.events = new Set();
         this.retryInterval = 10000; // retry every 10 seconds
         this.maxRetries = 3; // max retries before moving to dead letter queue
         setInterval(() => this.retryUnacknowledgedMessages(), this.retryInterval);
+        setInterval(() => this.errorHandler(new Error('Error in PubSub system')), 3000);
     }
 
     /**
@@ -31,7 +34,7 @@ class PubPlus {
                 this.pubClient.lpush(`${event}:queue`, messageData)
             ]);
         } catch (error) {
-            this.emit('error', new Error(`Error processing message: ${error.message}`));
+            this.errorHandler(new Error(`Error publishing message: ${error.message}`));
         }
 
     }
@@ -61,6 +64,10 @@ class PubPlus {
         ]);
     }
 
+    errorHandler(error) {
+        this.events.has('error') ? super.emit('error', error) : null;
+    }
+
 }
 
 
@@ -78,11 +85,11 @@ class SubPlus extends EventEmitter {
         this.events = new Map();
         this.subClient.on('message', async (channel, messageData) => {
             try {
-                const eventCallback = this.events.get(channel);
+                const eventHandler = this.events.get(channel);
                 const { id, message } = JSON.parse(messageData);
-                await eventCallback(message, async () => await this.acknowledgeMessage(channel, id));
+                await eventHandler(message, async () => await this.acknowledgeMessage(channel, id));
             } catch (error) {
-                super.emit('error', new Error(`Error processing message: ${error.message}`));
+                this.errorHandler(new Error(`Error processing message: ${error.message}`));
             }
         });
     }
@@ -106,7 +113,11 @@ class SubPlus extends EventEmitter {
 
     async on(event, callback) {
         this.events.set(event, callback);
-        if(event === 'error') return;
+        if(event === 'error' && this.events.has('error')) {
+            const eventHandler = this.events.get(event);
+            super.on(event, eventHandler);
+            return;  
+        }
         this.subClient.subscribe(event, (err) => {
             if (err) this.errorHandler(new Error(`Failed to subscribe: ${err.message}`));
         }); 
@@ -130,7 +141,7 @@ class SubPlus extends EventEmitter {
     }
 
     errorHandler(error) {
-        this.events.has('error') ? super.emit('error', error) : null;
+        this.events.has('error') ? this.emit('error', error) : null;
     }
 }
 
