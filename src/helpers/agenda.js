@@ -2,7 +2,7 @@ const Agenda = require('agenda');
 const { Billing } = require('../models/billing');
 const { Wallet } = require('../models/wallet');
 const moment = require('moment');
-const { formatHours, float } = require('.');
+const { float } = require('.');
 const { publishMessage } = require('./publisher');
 
 const agenda = new Agenda({ db: { address: process.env.MONGODB_URI, collection: 'agendaJobs', options: { useNewUrlParser: true, useUnifiedTopology: true } } });
@@ -21,8 +21,6 @@ const defineHourlyBillingJob = async ( agendaJobName) => {
       if (float(wallet.credit) >= float(billing.hourlyRate)) {
         wallet.credit = float(wallet.credit) - float(billing.hourlyRate);
         wallet.totalSpend = float(wallet.totalSpend) + float(billing.hourlyRate);
-        const lastRunAt = job.attrs.lastRunAt
-        console.log(lastRunAt);
         const isNewMonth = !moment(job.attrs.lastRunAt).isSame(moment(), 'month');
         if(isNewMonth) {
           wallet.lastMonthSpend = wallet.currentMonthSpend

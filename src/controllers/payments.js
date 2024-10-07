@@ -25,25 +25,45 @@ class PaymentsController {
     }
   }
 
+  /**
+   * Creates a new Stripe checkout session and saves the payment information to the database
+   * @param {Object} req - Express request object
+   * @param {Object} res - Express response object
+   * @param {Function} next - Next middleware function
+   * @returns {Promise<void>}
+   * @throws {ApiError} If the user is not found or if the payment amount is invalid
+   */
   async createCheckout(req, res, next) {
     try {
+      // validate amount
       const { amount } = req.body;
       if (isNaN(amount)) throw new ApiError('VALIDATION_ERROR', 'Amount must be a valid number');
 
+      // check if user exists
       const userCollection = mongoose.connection.db.collection('users');
       const user = await userCollection.findOne({ _id: new mongoose.mongo.ObjectId(req.user.userId) });
       if (!user) throw new ApiError('NOT_FOUND_ERROR', 'User not found');
 
+      // create checkout session
       const checkoutObj = createStripeCheckoutObj(user, amount);
       const { id: _id, payment_status, status, currency, url } = await stripe.checkout.sessions.create(checkoutObj);
       await payments.create({ _id, amount, payment_status, status, currency, createdBy: user._id, url });
 
+      // send response
       res.sendSuccessResponse({ data: { stripeCheckoutId: _id, redirectUrl: url }})
     } catch (e) {
       next(e)
     }
   }
 
+  /**
+   * Handles Stripe webhooks for checkout sessions
+   * @param {Object} req - Express request object
+   * @param {Object} res - Express response object
+   * @param {Function} next - Next middleware function
+   * @returns {Promise<void>}
+   * @throws {ApiError} If the payment is not found, or if the payment status is invalid
+   */
   async webhook(req, res, next) {
     try {
       const { type, data: { object: event } } = stripe.webhooks.constructEvent(req.body, req.headers['stripe-signature'], process.env.STRIPE_WEBHOOK_SECRET);
@@ -54,7 +74,7 @@ class PaymentsController {
 
         await payments.updateOne({ _id: event.id }, { status: 'complete', payment_status: 'paid', url: '' });
         
-        // update wallet
+        // emit event to update wallet
         const { client_reference_id, amount_total } = event;
         this.events.emit('payment', client_reference_id, amount_total / 100);
 
