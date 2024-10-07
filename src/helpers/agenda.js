@@ -10,6 +10,18 @@ const agenda = new Agenda({ db: { address: process.env.MONGODB_URI, collection: 
 // Known job definitions
 const jobDefinitions = new Set();
 
+/**
+ * Defines an hourly billing job. The job will be executed every hour and will
+ * update the billing and wallet of the user.
+ * 
+ * If the wallet has enough credit, the hourly rate of the billing will be
+ * subtracted from the wallet credit and added to the billing total cost.
+ * If the wallet does not have enough credit, the job will be removed and the
+ * billing will be stopped.
+ * 
+ * @param {string} agendaJobName - The name of the job to be defined. This will
+ * be used to identify the job and to check if it has already been defined.
+ */
 const defineHourlyBillingJob = async ( agendaJobName) => {
   agenda.define(agendaJobName, async (job) => {
     try {

@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const { instanceType } = require('../../config');
-class InstanceConfig {
+class InstancesInfo {
     schema = new mongoose.Schema({
         name: {
             type: String,
@@ -36,8 +36,8 @@ class InstanceConfig {
 
 
   getModel() {
-    return mongoose.model('instance-config', this.schema);
+    return mongoose.model('instances-info', this.schema);
   }
 }
 
-module.exports = { instanceConfig: new InstanceConfig().getModel() };
+module.exports = { instancesInfo: new InstancesInfo().getModel() };

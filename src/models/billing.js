@@ -6,9 +6,9 @@ class Billing {
       ref: 'users',
       required: true,
     },
-    instanceType: {
+    deployedOn: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'instance-config',
+      ref: 'instance-info',
       required: true,
     },
     usedBy:{

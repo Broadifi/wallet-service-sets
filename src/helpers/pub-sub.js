@@ -1,8 +1,9 @@
 const Redis = require('ioredis');
 const { v4: uuidv4 } = require('uuid');
 const EventEmitter = require('events');
+const { redisConf } = require('../../config');
 
-class PubPlus extends EventEmitter {
+class Pub extends EventEmitter {
 
     /**
      * Constructs a PubSub client.
@@ -78,7 +79,7 @@ class PubPlus extends EventEmitter {
 }
 
 
-class SubPlus extends EventEmitter {
+class Sub extends EventEmitter {
     /**
      * Constructs a Subscriber client.
      * @param {Object} redisConfig - The config object for Redis clients. like host, port etc.
@@ -152,4 +153,4 @@ class SubPlus extends EventEmitter {
     }
 }
 
-module.exports = { PubPlus, SubPlus };
+module.exports = { publisher: new Pub(redisConf), subscriber: new Sub(redisConf)};

@@ -1,20 +1,21 @@
 const { formatHours, float } = require("../helpers")
-const { Billing } = require("../models/billing")
+const { Billing } = require("../models/billing");
+const { Wallet } = require("../models/wallet");
 
 class billingController {
 
-    async getAll( req, res, next ) {
+    async getAll(req, res, next) {
         try {
             const page = Math.ceil(req.query.page) || 1
             const limit = Math.ceil(req.query.limit) || 10
             const skip = (page - 1) * limit;
-            const items = await Billing.find({ userId: req.user.userId } ).populate('instanceType').sort({ createdAt: -1 }).skip(skip).limit(limit).lean()
+            const items = await Billing.find({ userId: req.user.userId }).populate('instanceType').sort({ createdAt: -1 }).skip(skip).limit(limit).lean()
             const totalCount = await Billing.countDocuments({ userId: req.user.userId })
             const totalPages = Math.ceil(totalCount / limit);
             const hasNext = page < totalPages;
 
-            const result = items.map( item => {
-               return {
+            const result = items.map(item => {
+                return {
                     _id: String(item._id).slice(-4),
                     isActive: item.isActive,
                     name: item.usedBy.name,
@@ -28,17 +29,17 @@ class billingController {
                     currency: item.instanceType.currency
                 }
             })
-            res.sendSuccessResponse( result, { totalCount, hasNext, page } )
+            res.sendSuccessResponse(result, { totalCount, hasNext, page })
         } catch (e) {
             console.log(e)
             next(e)
         }
     }
 
-    async get( req, res, next ) {
+    async get(req, res, next) {
         try {
             const item = await Billing.findById(req.params.id)
-            res.sendSuccessResponse( item )
+            res.sendSuccessResponse(item)
         } catch (e) {
             next(e)
         }
@@ -47,23 +48,35 @@ class billingController {
     async currentBillingInfo(req, res, next) {
         try {
             const activeBills = await Billing.find({ isActive: true, userId: req.user.userId }).lean();
-    
+
             const costPerHour = activeBills.reduce((acc, bill) => {
                 return acc + parseFloat(bill.hourlyRate);
             }, 0);
             const ExpectedMonthlyCost = costPerHour * 24 * 30;
-    
+
             const totalSpentData = await Billing.find({ userId: req.user.userId }).lean();
             const totalSpent = totalSpentData.reduce((acc, bill) => {
                 return acc + parseFloat(bill.totalCost);
             }, 0);
-    
-            res.sendSuccessResponse({ activeBillsCount: activeBills.length, costPerHour, ExpectedMonthlyCost: parseFloat( ExpectedMonthlyCost.toFixed(4)), totalSpent, currency: "USD" });
+
+            const monthlyUsage = await Wallet.findOne({ createdBy: req.user.userId }, { currentMonthSpend: 1, lastMonthSpend: 1 }).lean();
+            const currentMonthSpend = monthlyUsage ? float(monthlyUsage.currentMonthSpend) : 0;
+            const lastMonthSpend = monthlyUsage ? float(monthlyUsage.lastMonthSpend) : 0;
+
+            res.sendSuccessResponse({
+                activeBillsCount: activeBills.length,
+                costPerHour,
+                ExpectedMonthlyCost: parseFloat(ExpectedMonthlyCost.toFixed(4)),
+                totalSpent,
+                currency: "USD",
+                currentMonthSpend,
+                lastMonthSpend
+            });
         } catch (e) {
             next(e);
         }
     }
-    
+
 }
 
-module.exports = { billingController: new billingController()}
+module.exports = { billingController: new billingController() }
