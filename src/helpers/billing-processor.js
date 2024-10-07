@@ -59,7 +59,7 @@ subscriber.on('stopBilling', async ( billingObj, ack ) => {
         const jobs = await agenda.jobs({ "data.billingId": billingId });
 
         if (!jobs[0]) {
-            return { message: 'No job found' }; // throw new Error('No job found');
+            await ack();
         }
         await jobs[0].remove();
 
