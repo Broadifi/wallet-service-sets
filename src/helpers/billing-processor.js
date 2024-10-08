@@ -5,27 +5,22 @@ const { Wallet } = require('../models/wallet');
 const { defineHourlyBillingJob, jobDefinitions } = require('./agenda');
 
 // To be used for all the billing in the entire project
-subscriber.on('startBilling', async ( billingObj, ack ) => {
+subscriber.on('startBilling', async ( billingInfo, ack ) => {
     try {
-        const { id, type, createdBy, deployedOn, createdAt } = billingObj;
-        const name = (billingObj.name).includes('/') ? (billingObj.name).split('/')[1] : billingObj.name; 
+        const { id, type, name, deployedOn, createdBy, createdAt } = billingInfo; 
         
-        const [ instanceDetails, wallet ] = await Promise.all([
+        const [ instanceInfo, wallet ] = await Promise.all([
             instancesInfo.findById( deployedOn ),
             Wallet.findOne({ createdBy })
         ])
-        const { hourlyRate } = instanceDetails;
+        const { hourlyRate } = instanceInfo;
         
         // Check if the wallet has enough credit
         if( !wallet || (float(wallet.credit) < float(hourlyRate))) {
             throw new Error('Payment required');
         }
 
-        let billing = await Billing.findOne({ userId: createdBy, instanceDetails: deployedOn, 'usedBy.id': id, 'usedBy.type': type });
-        // If the billing is not found, create a new one
-
-        if (!billing) {
-            billing = new Billing({ 
+        const billing = new Billing({ 
                 userId: createdBy, 
                 deployedOn,
                 hourlyRate, 
@@ -36,8 +31,7 @@ subscriber.on('startBilling', async ( billingObj, ack ) => {
                     name
                 } 
             });
-            await billing.save();
-        }
+        await billing.save();
 
         const billingId = String(billing._id); 
 

@@ -15,8 +15,9 @@ class Wallet {
       type: String,
       default: "USD"
     },
-    createdBy: {
-      type: mongoose.Schema.Types.ObjectId, // Assuming users are stored as ObjectIds in MongoDB
+    owner: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'users'
     },
     totalSpend: {
       type: String,
@@ -42,7 +43,6 @@ class Wallet {
 
 
   getModel() {
-    // eslint-disable-next-line no-console
     return mongoose.model('wallets', this.schema);
   }
 }
