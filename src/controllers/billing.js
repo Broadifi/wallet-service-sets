@@ -59,9 +59,7 @@ class billingController {
                 return acc + parseFloat(bill.totalCost);
             }, 0);
 
-            const monthlyUsage = await Wallet.findOne({ createdBy: req.user.userId }, { currentMonthSpend: 1, lastMonthSpend: 1 }).lean();
-            const currentMonthSpend = monthlyUsage ? float(monthlyUsage.currentMonthSpend) : 0;
-            const lastMonthSpend = monthlyUsage ? float(monthlyUsage.lastMonthSpend) : 0;
+            const { currentMonthSpend, lastMonthSpend } = await Wallet.findOne({ owner: req.user.userId }).lean();
 
             res.sendSuccessResponse({
                 activeBillsCount: activeBills.length,
@@ -69,8 +67,8 @@ class billingController {
                 ExpectedMonthlyCost: parseFloat(ExpectedMonthlyCost.toFixed(4)),
                 totalSpent,
                 currency: "USD",
-                currentMonthSpend,
-                lastMonthSpend
+                currentMonthSpend: float(currentMonthSpend),
+                lastMonthSpend: float(lastMonthSpend)
             });
         } catch (e) {
             next(e);

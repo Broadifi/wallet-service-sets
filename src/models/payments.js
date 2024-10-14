@@ -26,7 +26,8 @@ class Payments {
       default: 'usd'
     },
     createdBy: {
-      type: mongoose.Schema.Types.ObjectId, // Assuming users are stored as ObjectIds in MongoDB
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'users'
     },
     createdAt: {
       type: Date,
