@@ -11,7 +11,7 @@ subscriber.on('startBilling', async ( billingInfo, ack ) => {
         
         const [ instanceInfo, wallet ] = await Promise.all([
             instancesInfo.findById( deployedOn ),
-            Wallet.findOne({ createdBy })
+            Wallet.findOne({ owner: createdBy })
         ])
         const { hourlyRate } = instanceInfo;
         

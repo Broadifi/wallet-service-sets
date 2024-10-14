@@ -28,12 +28,8 @@ class Payments {
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'users'
-    },
-    createdAt: {
-      type: Date,
-      default: Date.now,
     }
-  });
+  }, { timestamps: true });
 
   getModel() {
     return mongoose.model('payments', this.schema);

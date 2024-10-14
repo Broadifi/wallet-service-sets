@@ -19,27 +19,19 @@ class Wallet {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'users'
     },
-    totalSpend: {
+    totalSpent: {
       type: String,
       default: '0'
     },
-    currentMonthSpend: {
+    currentMonthSpent: {
       type: String,
       default: '0'
     },
-    lastMonthSpend: {
+    lastMonthSpent: {
       type: String,
       default: '0'
-    },
-    createdAt: {
-      type: Date,
-      default: Date.now,
-    },
-    updatedAt: {
-      type: Date,
-      default: Date.now,
     }
-  });
+  }, { timestamps: true });
 
 
   getModel() {
