@@ -1,3 +1,4 @@
+const { unique } = require('agenda/dist/job/unique');
 const mongoose = require('mongoose');
 class Billing {
   schema = new mongoose.Schema({
@@ -14,6 +15,7 @@ class Billing {
     usedBy:{
       id: {
         type: mongoose.Schema.Types.ObjectId,
+        unique: true
       },
       type: {
         type: String,
