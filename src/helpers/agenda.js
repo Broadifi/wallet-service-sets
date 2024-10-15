@@ -26,24 +26,31 @@ const defineHourlyBillingJob = async ( agendaJobName) => {
   agenda.define(agendaJobName, async (job) => {
     try {
       const { billingId } = job.attrs.data;
-      const billing = await Billing.findById(billingId);
-      const wallet = await Wallet.findOne({ createdBy: billing.userId });
+      // get billing and wallet
+       const [billing, wallet] = await Promise.all([
+        Billing.findById(billingId),
+        Wallet.findOne({ owner: job.attrs.data.userId })
+      ])
       if (!billing || !wallet) throw new Error('Bill or wallet not found');
-      
+
+      // if the wallet has enough credit
       if (float(wallet.credit) >= float(billing.hourlyRate)) {
+        // update the wallet
         wallet.credit = float(wallet.credit) - float(billing.hourlyRate);
-        wallet.totalSpend = float(wallet.totalSpend) + float(billing.hourlyRate);
+        wallet.totalSpent = float(wallet.totalSpent) + float(billing.hourlyRate);
+        // if it's a new month
         const isNewMonth = !moment(job.attrs.lastRunAt).isSame(moment(), 'month');
         if(isNewMonth) {
-          wallet.lastMonthSpend = wallet.currentMonthSpend
-          wallet.currentMonthSpend = '0';
+          wallet.lastMonthSpent = wallet.currentMonthSpent
+          wallet.currentMonthSpent = '0';
         }
-        wallet.currentMonthSpend = float(wallet.currentMonthSpend) + float(billing.hourlyRate);
-        await wallet.save();
-
+        wallet.currentMonthSpent = float(wallet.currentMonthSpent) + float(billing.hourlyRate);
+        // update the billing
         billing.totalCost = float(billing.totalCost) + float(billing.hourlyRate);
         billing.durationHours = moment.duration(moment().diff(moment(billing.startTime))).asHours()
-        await billing.save();
+        // save to database
+        await Promise.all([ wallet.save(), billing.save()])
+        // add to local job definitions set
         jobDefinitions.add(agendaJobName);
       } else {
         const jobs = await agenda.jobs({ "data.billingId": billingId });
