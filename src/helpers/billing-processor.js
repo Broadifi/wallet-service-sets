@@ -25,9 +25,8 @@ class BillingProcessor {
                 } 
         });
         this.agendaJobs = new Set();
-        subscriber.on('startBilling', this.startBilling);
-        subscriber.on('stopBilling', this.stopBilling);
-        this.defineHourlyBillingJob = this.defineHourlyBillingJob.bind(this);
+        subscriber.on('startBilling', this.startBilling.bind(this));
+        subscriber.on('stopBilling', this.stopBilling.bind(this));
         this.initAgenda();
     }
 
