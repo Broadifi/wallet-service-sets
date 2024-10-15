@@ -8,8 +8,6 @@ const { Wallet } = require('../models/wallet');
 const { publisher, subscriber } = require('./pub-sub');
 
 
-
-
 class BillingProcessor {
 
     constructor() {

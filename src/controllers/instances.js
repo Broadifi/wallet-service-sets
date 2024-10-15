@@ -3,7 +3,7 @@ const { ApiError } = require("../helpers")
 const { instancesInfo } = require("../models/instance")
 
 
-class instaceConfigController {
+class instancesInfoController {
     async getAll( req, res, next ) {
         try {
             const { type } = req.query
@@ -28,4 +28,4 @@ class instaceConfigController {
 
 }
 
-module.exports = { instaceConfigController: new instaceConfigController()}
+module.exports = { instancesInfoController: new instancesInfoController()}

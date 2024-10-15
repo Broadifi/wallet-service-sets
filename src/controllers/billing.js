@@ -1,4 +1,4 @@
-const { formatHours, float } = require("../helpers")
+const { formatHours } = require("../helpers")
 const { Billing } = require("../models/billing");
 const { Wallet } = require("../models/wallet");
 
@@ -15,22 +15,22 @@ class billingController {
             const hasNext = page < totalPages;
 
             const result = items.map(item => {
+                const { isActive, usedBy, deployedOn, hourlyRate, startTime, endTime = null, durationHours, totalCost } = item;
                 return {
-                    isActive: item.isActive,
-                    name: item.usedBy.name,
-                    type: item.usedBy.type,
-                    deployedOn: item.deployedOn.name,
-                    currency: item.deployedOn.currency,
-                    hourlyRate: item.hourlyRate,
-                    startTime: item.startTime,
-                    endTime: item.endTime || null,
-                    hourUsed: formatHours(item.durationHours),
-                    total: float(float(item.totalCost).toFixed(4))
+                    isActive,
+                    name: usedBy.name,
+                    type: usedBy.type,
+                    deployedOn,
+                    currency: deployedOn.currency,
+                    hourlyRate,
+                    startTime,
+                    endTime,
+                    hourUsed: formatHours(durationHours),
+                    total: totalCost
                 }
             })
             res.sendSuccessResponse(result, { totalCount, hasNext, page })
         } catch (e) {
-            console.log(e)
             next(e)
         }
     }
@@ -57,9 +57,11 @@ class billingController {
 
             res.sendSuccessResponse({
                 activeBillsCount: activeBills.length,
-                costPerHour: float(costPerHour.toFixed(4)),
-                ExpectedMonthlyCost: float(expectedMonthlyCost.toFixed(4)),
-                timeleftInHour
+                costPerHour,
+                expectedMonthlyCost,
+                currentMonthSpent: userWallet.currentMonthSpent,
+                lastMonthSpent: userWallet.lastMonthSpent,
+                timeleftInHour,
             });
         } catch (e) {
             next(e);

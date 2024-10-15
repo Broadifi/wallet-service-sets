@@ -15,7 +15,7 @@ class PaymentsController {
       const page = Math.ceil(req.query.page) || 1
       const limit = Math.ceil(req.query.limit) || 10
       const skip = (page - 1) * limit;
-      const items = await payments.find({ createdBy: req.user.userId }, { __v: 0 }).sort({ createdAt: -1 }).skip(skip).limit(limit).lean()
+      const items = await payments.find({ createdBy: req.user.userId }, { __v: 0, createdBy: 0 }).sort({ createdAt: -1 }).skip(skip).limit(limit).lean()
       const totalCount = await payments.countDocuments({ createdBy: req.user.userId })
       const totalPages = Math.ceil(totalCount / limit);
       const hasNext = page < totalPages;

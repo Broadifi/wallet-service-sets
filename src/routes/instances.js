@@ -1,6 +1,5 @@
 const express = require('express');
-const { checkLogin } = require('../middleware/Auth');
-const { instaceConfigController } = require('../controllers/instances');
+const { instancesInfoController } = require('../controllers/instances');
 
 class InstacesRoute {
   constructor() {
@@ -9,8 +8,8 @@ class InstacesRoute {
   }
 
   initializeRoutes() {
-    this.router.get('/', instaceConfigController.getAll)
-    this.router.get('/:id', instaceConfigController.get)
+    this.router.get('/', instancesInfoController.getAll)
+    this.router.get('/:id', instancesInfoController.get)
   }
 
   getRouter() {
