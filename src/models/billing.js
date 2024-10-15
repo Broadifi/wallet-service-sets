@@ -8,7 +8,7 @@ class Billing {
     },
     deployedOn: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'instance-info',
+      ref: 'instances-info',
       required: true,
     },
     usedBy:{
