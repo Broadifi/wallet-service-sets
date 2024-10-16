@@ -1,7 +1,7 @@
 const Redis = require('ioredis');
 const { v4: uuidv4 } = require('uuid');
 const EventEmitter = require('events');
-const { redisConf } = require('../../config');
+const { redisConfig } = require('../../config');
 
 class Pub extends EventEmitter {
 
@@ -153,4 +153,4 @@ class Sub extends EventEmitter {
     }
 }
 
-module.exports = { publisher: new Pub(redisConf), subscriber: new Sub(redisConf)};
+module.exports = { publisher: new Pub(redisConfig), subscriber: new Sub(redisConfig)};

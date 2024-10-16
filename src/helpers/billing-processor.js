@@ -3,7 +3,7 @@ const moment = require('moment');
 const mongoose = require('mongoose');
 const { float } = require('.');
 const { Billing } = require('../models/billing');
-const { instancesInfo } = require('../models/instance');
+const { computeUnits } = require('../models/compute-units');
 const { Wallet } = require('../models/wallet');
 const { publisher, subscriber } = require('./pub-sub');
 
@@ -116,11 +116,11 @@ class BillingProcessor {
         try {
             const { id, type, name, deployedOn, createdBy, createdAt } = billingInfo; 
             
-            const [ instanceInfo, wallet ] = await Promise.all([
-                instancesInfo.findById( deployedOn ),
+            const [ computeUnit, wallet ] = await Promise.all([
+                computeUnits.findById( deployedOn ),
                 Wallet.findOne({ owner: createdBy })
             ])
-            const { hourlyRate } = instanceInfo;
+            const { hourlyRate } = computeUnit;
             
             // Check if the wallet has enough credit
             if( !wallet || (float(wallet.credit) < float(hourlyRate))) {

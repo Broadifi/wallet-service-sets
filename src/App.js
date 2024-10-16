@@ -1,12 +1,12 @@
+const cors = require('cors');
+const humanizeString = require('humanize-string');
 const { SendSuccessResponse, ApiError } = require('./helpers');
 const { formatMongooseError } = require('./helpers');
 const { WalletRoutes } = require('./routes/wallet');
-const { InstacesRoute } = require('./routes/instances');
+const { computeUnitsRoute } = require('./routes/compute-units');
 const { BillingRoutes } = require('./routes/billing');
-const cors = require('cors');
 const { paymentsController } = require('./controllers/payments');
 const { PaymentsRoutes } = require('./routes/payments');
-const humanizeString = require('humanize-string');
 
 class App {
   /**
@@ -41,7 +41,7 @@ class App {
     });
 
     app.use('/api/v1/wallet', WalletRoutes)
-    app.use('/api/v1/instances', InstacesRoute)
+    app.use('/api/v1/compute-units', computeUnitsRoute)
     app.use('/api/v1/billings', BillingRoutes)
     app.use('/api/v1/payments', PaymentsRoutes)
 

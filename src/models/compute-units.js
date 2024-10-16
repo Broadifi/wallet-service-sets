@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
-const { instanceType } = require('../../config');
-class InstancesInfo {
+const { computeUnitsTypes } = require('../../config');
+class ComputeUnits {
     schema = new mongoose.Schema({
         name: {
             type: String,
@@ -14,7 +14,7 @@ class InstancesInfo {
         },
         availableFor: {
             type: String,
-            enum: instanceType
+            enum: computeUnitsTypes
         },
         currency: {
             type: String,
@@ -36,8 +36,8 @@ class InstancesInfo {
 
 
   getModel() {
-    return mongoose.model('instances-info', this.schema);
+    return mongoose.model('compute-units', this.schema);
   }
 }
 
-module.exports = { instancesInfo: new InstancesInfo().getModel() };
+module.exports = { computeUnits: new ComputeUnits().getModel() };
