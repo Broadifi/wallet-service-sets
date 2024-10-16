@@ -20,7 +20,7 @@ class billingController {
                     isActive,
                     name: usedBy.name,
                     type: usedBy.type,
-                    deployedOn,
+                    deployedOn: deployedOn.name,
                     currency: deployedOn.currency,
                     hourlyRate,
                     startTime,
