@@ -46,40 +46,43 @@ class BillingProcessor {
         this.agenda.define(agendaJobName, async (job) => {
           try {
             const { billingId } = job.attrs.data;
+
             // get billing and wallet
-             const [billing, wallet] = await Promise.all([
-              Billing.findById(billingId),
-              Wallet.findOne({ owner: job.attrs.data.userId })
-            ])
-            if (!billing || !wallet) throw new Error('Bill or wallet not found');
+            const bill = await Billing.findById(billingId);
+            if (!bill) throw new Error('Bill not found');
+            
+            const userWallet = await Wallet.findOne({ owner: bill.userId });
+            if (!userWallet) throw new Error('wallet not found');
+
+            const hourlyRate = float(bill.hourlyRate);
       
             // if the wallet has enough credit
-            if (float(wallet.credit) >= float(billing.hourlyRate)) {
+            if (float(userWallet.credit) >= hourlyRate) {
               // update the wallet
-              wallet.credit = float(wallet.credit) - float(billing.hourlyRate);
-              wallet.totalSpent = float(wallet.totalSpent) + float(billing.hourlyRate);
+              userWallet.credit = float(userWallet.credit) - hourlyRate;
+              userWallet.totalSpent = float(userWallet.totalSpent) + hourlyRate;
               // if it's a new month
               const isNewMonth = !moment(job.attrs.lastRunAt).isSame(moment(), 'month');
               if(isNewMonth) {
-                wallet.lastMonthSpent = wallet.currentMonthSpent
-                wallet.currentMonthSpent = '0';
+                userWallet.lastMonthSpent = userWallet.currentMonthSpent
+                userWallet.currentMonthSpent = '0';
               }
-              wallet.currentMonthSpent = float(wallet.currentMonthSpent) + float(billing.hourlyRate);
+              userWallet.currentMonthSpent = float(userWallet.currentMonthSpent) + hourlyRate;
               // update the billing
-              billing.totalCost = float(billing.totalCost) + float(billing.hourlyRate);
-              billing.durationHours = moment.duration(moment().diff(moment(billing.startTime))).asHours()
+              bill.totalCost = float(bill.totalCost) + hourlyRate;
+              bill.durationHours = moment.duration(moment().diff(moment(bill.startTime))).asHours()
               // save to database
-              await Promise.all([ wallet.save(), billing.save()])
+              await Promise.all([ userWallet.save(), bill.save()])
               // add to local job definitions set
               this.agendaJobs.add(agendaJobName);
             } else {
               // remove the job if the wallet does not have enough credit
               const jobs = await agenda.jobs({ "data.billingId": billingId });
               await jobs[0].remove();
-              await Billing.updateOne( { _id: jobs[0].attrs.data.billingId }, { isActive: false, endTime: moment().toISOString() })
+              await Billing.updateOne( { _id: billingId }, { isActive: false, endTime: moment().toISOString() })
               this.agendaJobs.delete(agendaJobName);
               // Handle insufficient credit 
-              console.log('Insufficient credit. Service will be stopped for user:', billing.userId);
+              console.log('Insufficient credit. Service will be stopped for user:', bill.userId);
               publisher.emit('stopService', {
                 type: jobs[0].attrs.data.usedBy.type,
                 id: jobs[0].attrs.data.usedBy.id
