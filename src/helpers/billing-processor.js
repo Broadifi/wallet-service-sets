@@ -76,8 +76,8 @@ class BillingProcessor {
               // add to local job definitions set
               this.agendaJobs.add(agendaJobName);
             } else {
-              // remove the job if the wallet does not have enough credit
-              const jobs = await agenda.jobs({ "data.billingId": billingId });
+              // remove the job if the wallet does not have enough credit.
+              const jobs = await this.agenda.jobs({ "data.billingId": billingId });
               await jobs[0].remove();
               await Billing.updateOne( { _id: billingId }, { isActive: false, endTime: moment().toISOString() })
               this.agendaJobs.delete(agendaJobName);
