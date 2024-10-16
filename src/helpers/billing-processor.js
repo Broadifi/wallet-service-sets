@@ -50,7 +50,7 @@ class BillingProcessor {
             // get billing and wallet
             const bill = await Billing.findById(billingId);
             if (!bill) throw new Error('Bill not found');
-            
+
             const userWallet = await Wallet.findOne({ owner: bill.userId });
             if (!userWallet) throw new Error('wallet not found');
 
@@ -128,7 +128,7 @@ class BillingProcessor {
     
             // agenda
             await this.defineHourlyBillingJob(billingId);
-            await this.agenda.every('1 hour', billingId, { billingId }); 
+            await this.agenda.every('1 minute', billingId, { billingId }); 
             await ack();
         } catch (error) {
             console.log(error);
