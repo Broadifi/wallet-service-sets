@@ -9,7 +9,7 @@ publisher.emit('start-billing', {
     createdAt: '2024-10-15T19:42:04.257+00:00'
 })
 
-subscriber.on('stop-billing', (billingInfo, ack) => {
+subscriber.on('stop-service', (billingInfo, ack) => {
     console.log(billingInfo);
     ack();
 })
