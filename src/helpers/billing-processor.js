@@ -125,6 +125,7 @@ class BillingProcessor {
             // Check if the wallet has enough credit
             if( !wallet || (float(wallet.credit) < float(hourlyRate))) {
                 throw new Error('Payment required');
+                await ack();
             }
     
             const billing = new Billing({ 
