@@ -25,25 +25,26 @@ class BillingProcessor {
                 } 
         });
         this.agendaJobs = new Set();
-        subscriber.on('startBilling', this.startBilling.bind(this));
-        subscriber.on('stopBilling', this.stopBilling.bind(this));
+        subscriber.on('start-billing', this.startBilling.bind(this));
+        subscriber.on('stop-billing', this.stopBilling.bind(this));
         this.initAgenda();
     }
 
     async initAgenda() {
         await this.agenda.start();
         const existingJobs = await this.agendaJobsModel.find();
+        // dynamically redefine existing jobs
         existingJobs.forEach( async ({ name: job }) => {
           if (!this.agendaJobs.has(job)) {
             console.log(`Redefining existing job: ${job}`);
-            await this.defineHourlyBillingJob(job)
+            await this.addHourlyBillingJob(job)
             this.agendaJobs.add(job);
           }
         });
     }
 
-    async defineHourlyBillingJob ( agendaJobName ) {
-        this.agenda.define(agendaJobName, async (job) => {
+    async addHourlyBillingJob ( jobName ) {
+        this.agenda.define(jobName, async (job) => {
           try {
             const { billingId } = job.attrs.data;
 
@@ -58,39 +59,54 @@ class BillingProcessor {
       
             // if the wallet has enough credit
             if (float(userWallet.credit) >= hourlyRate) {
-              // update the wallet
-              userWallet.credit = float(userWallet.credit) - hourlyRate;
-              userWallet.totalSpent = float(userWallet.totalSpent) + hourlyRate;
-              // if it's a new month
-              const isNewMonth = !moment(job.attrs.lastRunAt).isSame(moment(), 'month');
-              if(isNewMonth) {
-                userWallet.lastMonthSpent = userWallet.currentMonthSpent
-                userWallet.currentMonthSpent = '0';
-              }
-              userWallet.currentMonthSpent = float(userWallet.currentMonthSpent) + hourlyRate;
-              // update the billing
-              bill.totalCost = float(bill.totalCost) + hourlyRate;
-              bill.durationHours = moment.duration(moment().diff(moment(bill.startTime))).asHours()
-              // save to database
-              await Promise.all([ userWallet.save(), bill.save()])
-              // add to local job definitions set
-              this.agendaJobs.add(agendaJobName);
+
+                // update the wallet
+                userWallet.credit = float(userWallet.credit) - hourlyRate;
+                userWallet.totalSpent = float(userWallet.totalSpent) + hourlyRate;
+
+                // if it's a new month
+                const isNewMonth = !moment(job.attrs.lastRunAt).isSame(moment(), 'month');
+                if(isNewMonth) {
+                    userWallet.lastMonthSpent = userWallet.currentMonthSpent
+                    userWallet.currentMonthSpent = '0';
+                }
+
+                userWallet.currentMonthSpent = float(userWallet.currentMonthSpent) + hourlyRate;
+
+                // update the billing
+                bill.totalCost = float(bill.totalCost) + hourlyRate;
+                bill.durationHours = moment.duration(moment().diff(moment(bill.startTime))).asHours();
+
+                // save to database
+                await Promise.all([ userWallet.save(), bill.save()]);
+
+                // add to local job definitions set
+                this.agendaJobs.add(jobName);
             } else {
-              // remove the job if the wallet does not have enough credit.
-              const jobs = await this.agenda.jobs({ "data.billingId": billingId });
-              await jobs[0].remove();
-              await Billing.updateOne( { _id: billingId }, { isActive: false, endTime: moment().toISOString() })
-              this.agendaJobs.delete(agendaJobName);
-              // Handle insufficient credit 
-              console.log('Insufficient credit. Service will be stopped for user:', bill.userId);
-              publisher.emit('stopService', {
-                type: jobs[0].attrs.data.usedBy.type,
-                id: jobs[0].attrs.data.usedBy.id
-              })
+                // if the wallet does not have enough credit.
+
+                const [ job ] = await this.agenda.jobs({ "data.billingId": billingId });
+                if (!job) throw new Error('Job not found');
+
+                // remove the agenda job
+                await job.remove();
+
+                // update the bill
+                await Billing.updateOne( { _id: billingId }, { isActive: false, endTime: moment().toISOString() });
+
+                // remove from local job definitions set
+                this.agendaJobs.delete(jobName);
+
+                // stop the service
+                console.log('Insufficient credit. Service will be stopped for user:', bill.userId.toString());
+                publisher.emit('stopService', {
+                    type: bill.usedBy.type,
+                    id: bill.usedBy.id
+                })
             }
             console.log('Billing updated:', billingId);
           } catch (error) {
-            console.error('Error updating billing hourly:', error);
+            console.error('Error billing:', error);
           }
         });
     }
@@ -112,23 +128,25 @@ class BillingProcessor {
             }
     
             const billing = new Billing({ 
-                    userId: createdBy, 
-                    deployedOn,
-                    hourlyRate, 
-                    startTime: createdAt,
-                    usedBy: { 
-                        id, 
-                        type, 
-                        name
-                    } 
-                });
+                userId: createdBy, 
+                deployedOn,
+                hourlyRate, 
+                startTime: createdAt,
+                usedBy: { 
+                    id, 
+                    type, 
+                    name
+                } 
+            });
             await billing.save();
     
-            const billingId = String(billing._id); 
+            const billingId = billing._id.toString(); 
     
             // agenda
-            await this.defineHourlyBillingJob(billingId);
+            await this.addHourlyBillingJob(billingId);
             await this.agenda.every('1 minute', billingId, { billingId }); 
+
+            // acknowledge the messsage
             await ack();
         } catch (error) {
             console.log(error);
@@ -139,13 +157,12 @@ class BillingProcessor {
         try {
             const { id } = billingInfo;
     
-            const billingId = await Billing.findOne({ 'usedBy.id': id }, { _id: 1 });
+            const billingId = await Billing.findOne({ 'usedBy.id': id });
     
             const jobs = await this.agenda.jobs({ "data.billingId": billingId });
     
-            if (!jobs[0]) {
-                await ack();
-            }
+            if (!jobs[0]) await ack();
+
             await jobs[0].remove();
     
             await Billing.updateOne( { _id: billingId }, { isActive: false, endTime: moment().toISOString() } )
