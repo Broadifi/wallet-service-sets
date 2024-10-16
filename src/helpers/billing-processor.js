@@ -99,7 +99,7 @@ class BillingProcessor {
 
                 // stop the service
                 console.log('Insufficient credit. Service will be stopped for user:', bill.userId.toString());
-                publisher.emit('stopService', {
+                publisher.emit('stop-service', {
                     type: bill.usedBy.type,
                     id: bill.usedBy.id
                 })
