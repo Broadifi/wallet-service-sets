@@ -9,7 +9,7 @@ class Billing {
     },
     deployedOn: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'compute-units',
+      ref: 'compute_units',
       required: true,
     },
     usedBy:{

@@ -36,7 +36,7 @@ class ComputeUnits {
 
 
   getModel() {
-    return mongoose.model('compute-units', this.schema);
+    return mongoose.model('compute_units', this.schema);
   }
 }
 
