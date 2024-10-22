@@ -114,31 +114,25 @@ class BillingProcessor {
     // To be used for all the billing in the entire project
     async startBilling(billingInfo, ack) { 
         try {
-            const { id, type, name, deployedOn, createdBy, createdAt } = billingInfo;
+            const { id, type, name, deployedOn, owner, createdAt } = billingInfo;
             
-            if( !id || !type || !name || !deployedOn || !createdBy || !createdAt ) {
-                await ack();
+            if( !id || !type || !name || !deployedOn || !owner || !createdAt ) {
                 throw new Error('missing required field');
             }
 
-            console.log('Starting billing', id, type, name, deployedOn, createdBy, createdAt);
-
             const [ computeUnit, wallet ] = await Promise.all([
                 computeUnits.findById( deployedOn ),
-                Wallet.findOne({ owner: createdBy })
+                Wallet.findOne({ owner })
             ])
-
-            console.log(computeUnit, wallet);
             const { hourlyRate } = computeUnit;
             
             // Check if the wallet has enough credit
             if( !wallet || (float(wallet.credit) < float(hourlyRate))) {
-                await ack();
                 throw new Error('Payment required');
             }
     
             const billing = new Billing({ 
-                userId: createdBy, 
+                userId: owner, 
                 deployedOn,
                 hourlyRate, 
                 startTime: createdAt,
