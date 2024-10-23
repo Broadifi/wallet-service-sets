@@ -76,7 +76,7 @@ class PaymentsController {
         
         // emit event to update wallet
         const { client_reference_id, amount_total } = event;
-        this.events.emit('payment', client_reference_id, amount_total / 100);
+        this.events.emit('payment:done', client_reference_id, amount_total / 100);
 
         return res.sendSuccessResponse({ message: 'Payment completed' });
       }else if (type === 'checkout.session.expired') {

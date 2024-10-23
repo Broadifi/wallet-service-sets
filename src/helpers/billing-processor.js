@@ -92,17 +92,14 @@ class BillingProcessor {
                 await job.remove();
 
                 // update the bill
-                await Billing.updateOne( { _id: billingId }, { isActive: false, endTime: moment().toISOString() });
+                await Billing.updateOne( { _id: billingId }, { status: 'paused' });
 
                 // remove from local job definitions set
                 this.agendaJobs.delete(jobName);
 
                 // stop the service
                 console.log('Insufficient credit. Service will be stopped for user:', bill.userId.toString());
-                publisher.emit('stop-service', {
-                    type: bill.usedBy.type,
-                    id: bill.usedBy.id
-                })
+                publisher.emit('pause-service', { type: bill.usedBy.type, id: bill.usedBy.id })
             }
             console.log('Billing updated:', billingId);
           } catch (error) {
@@ -115,7 +112,6 @@ class BillingProcessor {
     async startBilling(billingInfo, ack) { 
         try {
             const { id, type, name, deployedOn, owner, createdAt } = billingInfo;
-            
             if( !id || !type || !name || !deployedOn || !owner || !createdAt ) {
                 throw new Error('missing required field');
             }
@@ -143,7 +139,6 @@ class BillingProcessor {
                 } 
             });
             await billing.save();
-    
             const billingId = billing._id.toString(); 
     
             // agenda
@@ -153,6 +148,7 @@ class BillingProcessor {
             // acknowledge the messsage
             await ack();
         } catch (error) {
+            publisher.emit('stop-service', { type: billingInfo.type, id: billingInfo.id })
             console.log(error);
         }
     }
@@ -162,25 +158,45 @@ class BillingProcessor {
             const { id } = billingInfo;
     
             const bill = await Billing.findOne({ 'usedBy.id': new mongoose.Types.ObjectId(id) });
-
             if(!bill) throw new Error('Billing not found');
-    
             const billingId = bill._id.toString();
     
             const [ job ] = await this.agenda.jobs({ "data.billingId": billingId });
-    
             if (!job) {
                 await ack();
                 return;
             }
-
             await job.remove();
     
-            await Billing.updateOne( { _id: new mongoose.Types.ObjectId(billingId) }, { isActive: false, endTime: moment().toISOString() } )
-            
+            await Billing.updateOne( { _id: new mongoose.Types.ObjectId(billingId) }, { status: 'finished', endTime: moment().toISOString() } )
             this.agendaJobs.delete(billingId);
             
             await ack();
+        } catch (error) {   
+            console.log(error);
+        }
+    }
+
+
+    async resumeBilling(userId){
+        try {
+            const pausedBills = await Billing.find({ 'userId': new mongoose.Types.ObjectId(userId), status: 'paused' });
+            if(!pausedBills) return ;
+
+            let { credit } = await Wallet.findOne({ owner: userId });
+            credit = float(credit);
+            if(credit === 0) return;
+
+            for (const bill of pausedBills) {
+                const hourlyRate = float(bill.hourlyRate);
+                if(credit < hourlyRate) break;
+                credit -= hourlyRate;
+                const billingId = bill._id.toString();
+                await Billing.updateOne( { _id: new mongoose.Types.ObjectId(billingId) }, { status: 'active' } )
+                await this.addHourlyBillingJob(billingId);
+                await this.agenda.every('1 minute', billingId, { billingId });
+                publisher.emit('resume-service', { type: bill.usedBy.type, id: bill.usedBy.id });
+            }
         } catch (error) {   
             console.log(error);
         }

@@ -1,7 +1,11 @@
-const { unique } = require('agenda/dist/job/unique');
 const mongoose = require('mongoose');
 class Billing {
   schema = new mongoose.Schema({
+    status: {
+      type: String,
+      enum: ['active', 'paused', 'finished'],
+      default: 'active'
+    },
     userId: {
       type: mongoose.Schema.Types.ObjectId, 
       ref: 'users',
@@ -23,10 +27,6 @@ class Billing {
       name: {
         type: String
       }
-    },
-    isActive: {
-      type: Boolean,
-      default: true
     },
     hourlyRate: {
       type: String,

@@ -15,9 +15,9 @@ class billingController {
             const hasNext = page < totalPages;
 
             const result = items.map(item => {
-                const { isActive, usedBy, deployedOn, hourlyRate, startTime, endTime = null, durationHours, totalCost } = item;
+                const { status, usedBy, deployedOn, hourlyRate, startTime, endTime = null, durationHours, totalCost } = item;
                 return {
-                    isActive,
+                    status,
                     name: usedBy.name,
                     type: usedBy.type,
                     deployedOn: deployedOn.name,
@@ -46,7 +46,7 @@ class billingController {
 
     async currentBillingInfo(req, res, next) {
         try {
-            const activeBills = await Billing.find({ isActive: true, userId: req.user.userId }).lean();
+            const activeBills = await Billing.find({ status: 'active', userId: req.user.userId }).lean();
 
             const costPerHour = activeBills.reduce((acc, bill) => {
                 return acc + parseFloat(bill.hourlyRate);

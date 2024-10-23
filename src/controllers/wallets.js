@@ -1,21 +1,20 @@
 const { float } = require("../helpers");
 const { Wallet } = require("../models/wallet");
-const { paymentsController } = require("../controllers/payments");
+const EventEmitter = require('events');
+
 class WalletController {
 
   constructor() {
-    paymentsController.events.on('payment', async (userId, amount) => {
-      await this.updateWalletCredit(userId, amount);
-    })
+    this.events = new EventEmitter();
   }
-
 
   async updateWalletCredit(userId, amount) {
     try {
       const wallet = await Wallet.findOne({ owner: userId });
-      let currentCredit = wallet ? parseFloat(wallet.credit) : 0;
+      let currentCredit = wallet ? float(wallet.credit) : 0;
       currentCredit += amount;
-      return (await Wallet.updateOne({ owner: userId }, { credit: currentCredit.toString() }, { upsert: true, new: true }));
+      await Wallet.updateOne({ owner: userId }, { credit: currentCredit.toString() }, { upsert: true, new: true });
+      this.events.emit('wallet:updated', userId);
     } catch (e) {
       console.log(e)
     }

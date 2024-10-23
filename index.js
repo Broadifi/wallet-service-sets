@@ -7,6 +7,7 @@ const express = require('express');
 const { Database } = require('./config');
 const { App } = require('./src/App');
 require('./src/helpers/billing-processor');
+require('./src/helpers/events-manager');
 
 const initApp = async () => {
   try {
