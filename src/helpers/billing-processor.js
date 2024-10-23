@@ -161,13 +161,16 @@ class BillingProcessor {
         try {
             const { id } = billingInfo;
     
-            const billingId = await Billing.findOne({ 'usedBy.id': id });
+            const billingId = await Billing.findOne({ 'usedBy.id': new mongoose.Types.ObjectId(id) });
     
-            const jobs = await this.agenda.jobs({ "data.billingId": billingId });
+            const [ job ] = await this.agenda.jobs({ "data.billingId": billingId });
     
-            if (!jobs[0]) await ack();
+            if (!job) {
+                await ack();
+                return;
+            }
 
-            await jobs[0].remove();
+            await job.remove();
     
             await Billing.updateOne( { _id: billingId }, { isActive: false, endTime: moment().toISOString() } )
             
