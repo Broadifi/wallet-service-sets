@@ -62,6 +62,7 @@ class billingController {
                 currentMonthSpent: userWallet.currentMonthSpent,
                 lastMonthSpent: userWallet.lastMonthSpent,
                 timeleftInHour,
+                currency: userWallet.currency
             });
         } catch (e) {
             next(e);
