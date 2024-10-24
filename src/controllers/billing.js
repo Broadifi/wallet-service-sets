@@ -1,4 +1,4 @@
-const { formatHours } = require("../helpers")
+const { formatHours, float } = require("../helpers")
 const { Billing } = require("../models/billing");
 const { Wallet } = require("../models/wallet");
 
@@ -22,11 +22,11 @@ class billingController {
                     type: usedBy.type,
                     deployedOn: deployedOn.name,
                     currency: deployedOn.currency,
-                    hourlyRate,
+                    hourlyRate: float(hourlyRate),
                     startTime,
                     endTime,
                     hourUsed: formatHours(durationHours),
-                    total: totalCost
+                    totalCost: float(totalCost)
                 }
             })
             res.sendSuccessResponse(result, { totalCount, hasNext, page })
@@ -49,7 +49,7 @@ class billingController {
             const activeBills = await Billing.find({ status: 'active', userId: req.user.userId }).lean();
 
             const costPerHour = activeBills.reduce((acc, bill) => {
-                return acc + parseFloat(bill.hourlyRate);
+                return acc + float(bill.hourlyRate);
             }, 0);
             const expectedMonthlyCost = costPerHour * 24 * 30;
             let userWallet = await Wallet.findOne({ owner: req.user.userId }).lean()
@@ -59,8 +59,8 @@ class billingController {
                 activeBillsCount: activeBills.length,
                 costPerHour,
                 expectedMonthlyCost,
-                currentMonthSpent: userWallet.currentMonthSpent,
-                lastMonthSpent: userWallet.lastMonthSpent,
+                currentMonthSpent: float(userWallet.currentMonthSpent),
+                lastMonthSpent: float(userWallet.lastMonthSpent),
                 timeleftInHour,
                 currency: userWallet.currency
             });
